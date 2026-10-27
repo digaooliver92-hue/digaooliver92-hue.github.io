@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ManuPlay TV | Sua Loja no Ar com TV, Rádio e Vídeo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #0b132b; color: #ffffff; line-height: 1.6; }
+        header { background: #0b132b; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: #f77f00; }
+        .logo-dot { width: 12px; height: 12px; background-color: #e63946; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #e63946; }
+        nav { display: flex; gap: 20px; align-items: center; }
+        nav a { color: #8d99ae; text-decoration: none; font-weight: 500; transition: 0.3s; }
+        nav a:hover { color: #ffffff; }
+        .btn-whats { background-color: #25d366; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-whats:hover { background-color: #1ebe5d; }
+
+        .hero { padding: 60px 5%; text-align: center; max-width: 900px; margin: 0 auto; }
+        .hero h1 { font-size: 42px; font-weight: 800; margin-bottom: 20px; color: #ffffff; }
+        .hero h1 span { color: #f77f00; }
+        .hero p { font-size: 18px; color: #8d99ae; margin-bottom: 30px; }
+        .hero-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn-primary { background-color: #f77f00; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 700; transition: 0.3s; }
+        .btn-primary:hover { background-color: #d66f00; }
+        .btn-secondary { background-color: #1c2541; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 700; transition: 0.3s; border: 1px solid #3a506b; }
+        .btn-secondary:hover { background-color: #3a506b; }
+
+        /* DEMO LOOPS / PLAYER SECTIONS */
+        .demo-section { padding: 20px 5%; max-width: 1000px; margin: 0 auto; }
+        .demo-card { background: #1c2541; border-radius: 12px; overflow: hidden; border: 1px solid #3a506b; position: relative; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .live-badge { position: absolute; top: 15px; right: 15px; background: #e63946; color: white; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; z-index: 10; letter-spacing: 1px; }
+        .demo-media { width: 100%; height: 350px; background: #000; object-fit: cover; display: block; }
+        .demo-info { padding: 20px; }
+        .demo-info h3 { font-size: 20px; margin-bottom: 8px; color: #ffffff; }
+        .demo-info p { color: #8d99ae; font-size: 14px; }
+
+        /* AUDIO PLAYER */
+        .audio-player-box { background: #1c2541; padding: 20px; border-radius: 12px; margin: 30px 0; border: 1px solid #3a506b; text-align: center; }
+        .audio-player-box h3 { margin-bottom: 15px; font-size: 18px; }
+        audio { width: 100%; max-width: 500px; }
+
+        /* SECTIONS */
+        .section-title { text-align: center; font-size: 32px; font-weight: 800; margin: 60px 0 20px; }
+        .section-desc { text-align: center; color: #8d99ae; margin-bottom: 40px; }
+
+        .grid-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 0 5%; max-width: 1200px; margin: 0 auto; }
+        .service-card { background: #1c2541; padding: 25px; border-radius: 12px; border: 1px solid #3a506b; }
+        .service-card h3 { font-size: 18px; margin-bottom: 10px; color: #f77f00; }
+        .service-card p { font-size: 14px; color: #8d99ae; }
+
+        /* PLANS */
+        .grid-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 0 5%; max-width: 1200px; margin: 0 auto; }
+        .plan-card { background: #1c2541; border-radius: 12px; padding: 30px; border: 1px solid #3a506b; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .plan-card.featured { border: 2px solid #f77f00; background: #151f38; }
+        .featured-tag { position: absolute; top: -12px; left: 30px; background: #f77f00; color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .plan-price { font-size: 36px; font-weight: 800; color: #ffffff; margin: 20px 0; }
+        .plan-price span { font-size: 16px; color: #8d99ae; font-weight: normal; }
+        .plan-features { list-style: none; margin-bottom: 25px; }
+        .plan-features li { padding: 8px 0; font-size: 14px; color: #d1d5db; border-bottom: 1px solid #233055; }
+        .plan-features li::before { content: "✓ "; color: #25d366; font-weight: bold; }
+
+        /* CHECKOUT / PAYMENT */
+        .checkout-box { background: #1c2541; max-width: 600px; margin: 50px auto; padding: 30px; border-radius: 12px; border: 1px solid #3a506b; text-align: center; }
+        .checkout-box select { width: 100%; padding: 12px; background: #0b132b; border: 1px solid #3a506b; color: white; border-radius: 6px; margin-bottom: 20px; font-size: 16px; }
+        .checkout-buttons { display: flex; gap: 15px; justify-content: center; }
+
+        footer { text-align: center; padding: 40px 5%; color: #8d99ae; font-size: 14px; border-top: 1px solid #1c2541; margin-top: 60px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            ManuPlay <span>TV</span>
+        </div>
+        <nav>
+            <a href="#servicos">Servicios</a>
+            <a href="#trabalhos">Trabalhos</a>
+            <a href="#planos">Planos</a>
+            <a href="#pagamento">Pagamento</a>
+            <a href="https://wa.me/5500000000000" target="_blank" class="btn-whats">Falar no WhatsApp</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Sua loja no ar, com <span>TV, rádio e vídeo</span> da sua marca.</h1>
+        <p>Fazemos a programação inteira: ofertas na tela, música sem repetir, locuções, vinhetas e comerciais. Você escolhe o que divulgar e a gente deixa rodando.</p>
+        <div class="hero-buttons">
+            <a href="#planos" class="btn-primary">Ver planos</a>
+            <a href="https://wa.me/5500000000000" target="_blank" class="btn-secondary">Pedir demonstração</a>
+        </div>
+    </section>
+
+    <!-- DEMONSTRAÇÃO COM PLAYERS EM LOOP (Substitua os links dos vídeos/imagens abaixo pelos seus arquivos) -->
+    <div class="demo-section">
+        <h2 style="text-align: center; margin-bottom: 25px; font-size: 24px;">Exemplo ao vivo na tela da loja</h2>
+        
+        <div class="demo-card">
+            <span class="live-badge">NO AR</span>
+            <!-- Player de Vídeo ou Imagem em Loop Automático -->
+            <video class="demo-media" autoplay muted loop playsinline>
+                <source src="SEU_LINK_DE_VIDEO_OU_GIF_AQUI.mp4" type="video/mp4">
+                Seu navegador não suporta vídeo. (Coloque aqui imagens ou vídeos em loop)
+            </video>
+            <div class="demo-info">
+                <h3>Vitrine Inteligente / Ofertas do Dia</h3>
+                <p>Exemplo ilustrativo de como a programação de preços e ofertas aparece na tela da sua loja.</p>
+            </div>
+        </div>
+
+        <!-- PLAYER DE RÁDIO WEB / ÁUDIO INDOOR -->
+        <div class="audio-player-box">
+            <h3>🎵 Rádio Web & Áudio Indoor Tocando Agora</h3>
+            <p style="color: #8d99ae; font-size: 13px; margin-bottom: 12px;">Programação musical sem repetição com chamadas comerciais programadas.</p>
+            <audio controls>
+                <source src="SUA_STREAM_OU_AUDIO_DE_EXEMPLO.mp3" type="audio/mpeg">
+                Seu navegador não suporta áudio.
+            </audio>
+        </div>
+    </div>
+
+    <!-- SEÇÃO DE SERVIÇOS -->
+    <h2 class="section-title" id="servicos">Tudo de áudio e vídeo que a sua loja precisa</h2>
+    <p class="section-desc">Do canal que fica ligado o dia inteiro ao comercial que lança uma promoção.</p>
+
+    <div class="grid-services">
+        <div class="service-card">
+            <h3>TV Corporativa e TV Indoor</h3>
+            <p>Canal com a logo do cliente, ofertas, avisos internos e comerciais, rodando em Smart TV ou TV Box.</p>
+        </div>
+        <div class="service-card">
+            <h3>Rádio Indoor</h3>
+            <p>Playlist grande que percorre as músicas antes de repetir, com locuções comerciais entre as faixas.</p>
+        </div>
+        <div class="service-card">
+            <h3>Rádio Web Completa</h3>
+            <p>Programação, vinhetas, chamadas e comerciais para quem quer uma emissora no ar.</p>
+        </div>
+        <div class="service-card">
+            <h3>Comerciais e Vinhetas</h3>
+            <p>Roteiro, locução e edição para rádio e TV, prontos para entrar na programação.</p>
+        </div>
+        <div class="service-card">
+            <h3>Vídeos com IA</h3>
+            <p>Animação 3D, estilo Pixar e cinematográfico para redes sociais, eventos e divulgação.</p>
+        </div>
+        <div class="service-card">
+            <h3>Identidade do Canal</h3>
+            <p>Logo, cores e vinheta de abertura para o canal parecer da sua marca desde o primeiro minuto.</p>
+        </div>
+    </div>
+
+    <!-- PLANOS MENSAIS -->
+    <h2 class="section-title" id="planos">Planos mensais</h2>
+    <p class="section-desc">Mensalidade simples, sem fidelidade. A instalação é combinada no briefing.</p>
+
+    <div class="grid-plans">
+        <div class="plan-card">
+            <div>
+                <h3>TV Indoor</h3>
+                <div class="plan-price">R$ 149,00 <span>/ mês</span></div>
+                <ul class="plan-features">
+                    <li>Canal de TV com a logo da loja</li>
+                    <li>Ofertas e avisos atualizados</li>
+                    <li>Roda sem internet depois de baixado</li>
+                    <li>Suporte no WhatsApp</li>
+                </ul>
+            </div>
+            <a href="#pagamento" class="btn-primary" style="text-align: center;">Contratar</a>
+        </div>
+
+        <div class="plan-card">
+            <div>
+                <h3>Rádio Indoor</h3>
+                <div class="plan-price">R$ 129,00 <span>/ mês</span></div>
+                <ul class="plan-features">
+                    <li>Playlist ampla sem repetição</li>
+                    <li>Locuções a cada X músicas</li>
+                    <li>Roda sem internet</li>
+                    <li>Troca de campanhas quando precisar</li>
+                </ul>
+            </div>
+            <a href="#pagamento" class="btn-primary" style="text-align: center;">Contratar</a>
+        </div>
+
+        <div class="plan-card featured">
+            <span class="featured-tag">Mais pedido</span>
+            <div>
+                <h3>TV + Rádio</h3>
+                <div class="plan-price">R$ 229,00 <span>/ mês</span></div>
+                <ul class="plan-features">
+                    <li>Tudo da TV Indoor</li>
+                    <li>Tudo da Rádio Indoor</li>
+                    <li>Uma identidade só</li>
+                    <li>Prioridade no atendimento</li>
+                </ul>
+            </div>
+            <a href="#pagamento" class="btn-primary" style="text-align: center;">Contratar</a>
+        </div>
+    </div>
+
+    <!-- ÁREA DE PAGAMENTO / PIX / CARTÃO -->
+    <div class="checkout-box" id="pagamento">
+        <h2 style="margin-bottom: 15px; font-size: 22px;">Pague pelo Pix ou cartão</h2>
+        <p style="color: #8d99ae; font-size: 14px; margin-bottom: 20px;">Escolha o serviço abaixo para gerar o pedido direto no WhatsApp.</p>
+        
+        <select id="select-servico">
+            <option value="TV Indoor - R$ 149,00">TV Indoor - R$ 149,00 / mês</option>
+            <option value="Rádio Indoor - R$ 129,00">Rádio Indoor - R$ 129,00 / mês</option>
+            <option value="Combo TV + Rádio - R$ 229,00">Combo TV + Rádio - R$ 229,00 / mês</option>
+            <option value="Vinheta de Rádio ou TV - R$ 60,00">Vinheta avulsa - R$ 60,00</option>
+            <option value="Comercial com Vídeo IA - R$ 350,00">Comercial com Vídeo IA - R$ 350,00</option>
+        </select>
+
+        <div class="checkout-buttons">
+            <a href="#" id="btn-gerar-pix" target="_blank" class="btn-primary">Gerar Pix</a>
+            <a href="#" id="btn-gerar-cartao" target="_blank" class="btn-secondary">Pedir Link do Cartão</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>ManuPlay TV · TV, rádio e vídeo para o comércio</p>
+    </footer>
+
+    <script>
+        // Script simples para integrar a seleção de planos com o WhatsApp
+        const selectServico = document.getElementById('select-servico');
+        const btnPix = document.getElementById('btn-gerar-pix');
+        const btnCartao = document.getElementById('btn-gerar-cartao');
+
+        function atualizarLinks() {
+            const servicoEscolhido = selectServico.value;
+            const numeroWhats = "5524999999999"; // Substitua pelo seu WhatsApp real
+            
+            const msgPix = encodeURIComponent(`Olá! Quero contratar o serviço: *${servicoEscolhido}* via PIX.`);
+            const msgCartao = encodeURIComponent(`Olá! Quero contratar o serviço: *${servicoEscolhido}* via Cartão de Crédito.`);
+            
+            btnPix.href = `https://wa.me/${numeroWhats}?text=${msgPix}`;
+            btnCartao.href = `https://wa.me/${numeroWhats}?text=${msgCartao}`;
+        }
+
+        selectServico.addEventListener('change', atualizarLinks);
+        atualizarLinks();
+    </script>
+</body>
+</html>
+
