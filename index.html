@@ -6,7 +6,7 @@
     <title>ManuPlay TV - Soluções em TV e Rádio Indoor</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #050b14; color: #ffffff; overflow-x: hidden; }
+        body { background-color: #050b14; color: #ffffff; overflow-x: hidden; line-height: 1.6; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(5, 11, 20, 0.95); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .logo-area { display: flex; align-items: center; gap: 10px; }
         .logo-icon { width: 40px; height: 26px; background: linear-gradient(135deg, #00f2fe, #4facfe, #ff007f); border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; }
@@ -17,29 +17,39 @@
         nav a:hover { color: #00f2fe; }
         .btn-whats { background: #25d366; color: white; padding: 10px 18px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         
-        .hero { padding: 140px 5% 80px 5%; display: flex; flex-direction: column; align-items: flex-start; background: radial-gradient(circle at 80% 20%, rgba(0, 242, 254, 0.15) 0%, transparent 50%); }
-        .hero h1 { font-size: 38px; line-height: 1.2; margin-bottom: 20px; max-width: 700px; }
+        .hero { padding: 150px 5% 100px 5%; display: flex; flex-direction: column; align-items: flex-start; background: radial-gradient(circle at 80% 20%, rgba(0, 242, 254, 0.15) 0%, transparent 50%); }
+        .hero h1 { font-size: 42px; line-height: 1.2; margin-bottom: 20px; max-width: 800px; }
         .hero h1 span { background: linear-gradient(90deg, #ff007f, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { color: #a0aec0; font-size: 16px; margin-bottom: 30px; max-width: 600px; line-height: 1.5; }
-        .hero-btns { display: flex; gap: 15px; }
-        .btn-primary { background: #00f2fe; color: #050b14; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; transition: 0.3s; }
-        .btn-outline { border: 2px solid #00f2fe; color: #00f2fe; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; transition: 0.3s; }
+        .hero p { color: #a0aec0; font-size: 18px; margin-bottom: 35px; max-width: 700px; }
+        .hero-btns { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-primary { background: #00f2fe; color: #050b14; padding: 14px 28px; border-radius: 8px; font-weight: bold; text-decoration: none; transition: 0.3s; }
+        .btn-primary:hover { background: #4facfe; }
+        .btn-outline { border: 2px solid #00f2fe; color: #00f2fe; padding: 14px 28px; border-radius: 8px; font-weight: bold; text-decoration: none; transition: 0.3s; }
+        .btn-outline:hover { background: rgba(0,242,254,0.1); }
 
-        .section-title { font-size: 26px; margin: 40px 5% 20px 5%; font-weight: bold; border-left: 4px solid #ff007f; padding-left: 12px; }
+        .section-title { font-size: 28px; margin: 60px 5% 20px 5%; font-weight: bold; border-left: 4px solid #ff007f; padding-left: 12px; }
         
+        /* QUEM SOMOS / CULTURA */
+        .about-container { padding: 0 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 50px; }
+        .about-card { background: #0a1525; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 30px; }
+        .about-card h3 { font-size: 20px; color: #00f2fe; margin-bottom: 15px; }
+        .about-card p { color: #a0aec0; font-size: 15px; line-height: 1.6; }
+
+        /* PLAYERS */
         .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 0 5%; margin-bottom: 50px; }
         .media-card { background: #0a1525; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
         .media-card h3 { font-size: 18px; margin-bottom: 12px; color: #00f2fe; }
-        .player-box { width: 100%; height: 180px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; position: relative; }
+        .player-box { width: 100%; height: 190px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; position: relative; }
         .player-box video, .player-box iframe { width: 100%; height: 100%; object-fit: cover; }
         audio { width: 100%; margin-top: 10px; }
 
+        /* SERVIÇOS */
         .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 0 5%; margin-bottom: 60px; }
         .service-card { background: #0a1525; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 25px; }
-        .service-card h3 { font-size: 18px; margin-bottom: 10px; }
-        .service-card p { color: #a0aec0; font-size: 14px; line-height: 1.4; }
+        .service-card h3 { font-size: 18px; margin-bottom: 10px; color: #fff; }
+        .service-card p { color: #a0aec0; font-size: 14px; line-height: 1.5; }
 
-        footer { text-align: center; padding: 30px; color: #718096; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.05); }
+        footer { text-align: center; padding: 40px; color: #718096; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); background: #03070d; }
     </style>
 </head>
 <body>
@@ -50,6 +60,7 @@
             <div class="logo-text">Manu<span>Play</span></div>
         </div>
         <nav>
+            <a href="#about">Quem Somos</a>
             <a href="#players">Demonstração</a>
             <a href="#servicos">Serviços</a>
             <a href="https://wa.me/5524999999999" class="btn-whats" target="_blank">WhatsApp</a>
@@ -57,80 +68,114 @@
     </header>
 
     <section class="hero">
-        <h1>Sua loja em destaque com ofertas na TV e <span>áudio comercial</span></h1>
-        <p>A ManuPlay TV conecta sua marca com seus clientes através de TV, rádio e vídeos profissionais.</p>
+        <h1>Transformamos o seu negócio com <span>padrão cinematográfico</span> em TV e Áudio</h1>
+        <p>Digitalizamos produtos, engajamos clientes e valorizamos a sua marca no comércio, igrejas e academias de forma simples, moderna e altamente profissional.</p>
         <div class="hero-btns">
-            <a href="#players" class="btn-primary">Ver Demonstração</a>
-            <a href="https://wa.me/5524999999999" class="btn-outline" target="_blank">Orçamento</a>
+            <a href="#players" class="btn-primary">Ver Players Ao Vivo</a>
+            <a href="https://wa.me/5524999999999" class="btn-outline" target="_blank">Fale no WhatsApp</a>
         </div>
     </section>
 
-    <h2 class="section-title" id="players">Demonstração: 3 Players de Vídeo</h2>
+    <h2 class="section-title" id="about">Quem Somos & Nossa Cultura</h2>
+    <div class="about-container">
+        <div class="about-card">
+            <h3>Nossa Essência</h3>
+            <p>A ManuPlay TV é especialista em criar experiências imersivas através de TV corporativa, TV web, rádio indoor e web rádio. Mostramos que o que parece complexo ou fora da realidade é, na verdade, uma ferramenta acessível e indispensável para impulsionar resultados.</p>
+        </div>
+        <div class="about-card">
+            <h3>Cultura e Objetivo</h3>
+            <p>Trabalhamos com foco total na excelência administrativa e tecnológica. Acreditamos que todo comércio, instituição religiosa ou academia merece comunicação de alto padrão — unindo endomarketing, entretenimento e vendas em soluções inteligentes e fáceis de gerenciar.</p>
+        </div>
+        <div class="about-card">
+            <h3>Visão de Futuro</h3>
+            <p>Ser a maior referência nacional em soluções integradas de mídia audiovisual para o mercado corporativo e varejista, entregando padrão Disney e cinematográfico com reaproveitamento total de conteúdos para redes sociais e WhatsApp.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title" id="players">Demonstração Ao Vivo: 3 Players de Vídeo</h2>
     <div class="media-grid">
         <div class="media-card">
-            <h3>Player de Vídeo 1 (Loop)</h3>
+            <h3>Vídeo 1 (Loop Institucional / Ofertas)</h3>
             <div class="player-box">
                 <video controls autoplay muted loop>
                     <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
                 </video>
             </div>
+            <p style="font-size:13px; color:#a0aec0;">Exibição contínua para PDV e vitrines digitais.</p>
         </div>
         <div class="media-card">
-            <h3>Player de Vídeo 2 (TV Corporativa)</h3>
+            <h3>Vídeo 2 (TV Corporativa / Canal Web)</h3>
             <div class="player-box">
                 <iframe src="https://www.youtube.com/embed/tgbNymZ7vqY?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
             </div>
+            <p style="font-size:13px; color:#a0aec0;">Conteúdo dinâmico integrado com plataformas externas.</p>
         </div>
         <div class="media-card">
-            <h3>Player de Vídeo 3 (Stream M3U)</h3>
+            <h3>Vídeo 3 (Sinal M3U / IPTV Dedicado)</h3>
             <div class="player-box">
                 <video controls>
                     <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4">
                 </video>
             </div>
+            <p style="font-size:13px; color:#a0aec0;">Transmissão de listas e streams ao vivo em alta definição.</p>
         </div>
     </div>
 
-    <h2 class="section-title">Demonstração: 3 Players de Áudio</h2>
+    <h2 class="section-title">Demonstração Ao Vivo: 3 Players de Áudio</h2>
     <div class="media-grid">
         <div class="media-card">
-            <h3>Player de Áudio 1 (Web Rádio)</h3>
+            <h3>Áudio 1 (Web Rádio Ao Vivo)</h3>
             <audio controls>
                 <source src="https://stream.zeno.fm/f3wvbbqmdg8uv" type="audio/mpeg">
             </audio>
+            <p style="font-size:13px; color:#a0aec0; margin-top:8px;">Sinal contínuo 24h para som ambiente corporativo.</p>
         </div>
         <div class="media-card">
-            <h3>Player de Áudio 2 (Playlist Loop)</h3>
+            <h3>Áudio 2 (Playlist Comercial Loop)</h3>
             <audio controls loop>
                 <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
             </audio>
+            <p style="font-size:13px; color:#a0aec0; margin-top:8px;">Seleção de vinhetas e chamadas comerciais automáticas.</p>
         </div>
         <div class="media-card">
-            <h3>Player de Áudio 3 (Spot Comercial)</h3>
+            <h3>Áudio 3 (Spot Personalizado)</h3>
             <audio controls>
                 <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
             </audio>
+            <p style="font-size:13px; color:#a0aec0; margin-top:8px;">Trilha sonora exclusiva para fidelizar clientes no balcão.</p>
         </div>
     </div>
 
-    <h2 class="section-title" id="servicos">Nossos Serviços</h2>
+    <h2 class="section-title" id="servicos">Nossas Soluções Especializadas</h2>
     <div class="services-grid">
         <div class="service-card">
-            <h3>TV Corporativa e TV Indoor</h3>
-            <p>Conteúdos personalizados para sua loja com ofertas e institucional.</p>
+            <h3>TV Corporativa e Indoor</h3>
+            <p>Transforme telas em canais de vendas com campanhas visuais atrativas para comércios e redes.</p>
         </div>
         <div class="service-card">
-            <h3>Rádio Indoor</h3>
-            <p>Trilhas e comerciais para criar o ambiente ideal e aumentar vendas.</p>
+            <h3>Rádio Indoor Comercial</h3>
+            <p>Gerencie a atmosfera do seu negócio com locuções profissionais, trilhas e ofertas na hora certa.</p>
         </div>
         <div class="service-card">
-            <h3>Rádio Web Completa</h3>
-            <p>Transmissão online com programação 24h para lojas e redes.</p>
+            <h3>Rádio Web e Streaming</h3>
+            <p>Leve sua programação para a internet com estabilidade total para ouvintes em qualquer lugar.</p>
+        </div>
+        <div class="service-card">
+            <h3>Comerciais e Vinhetas</h3>
+            <p>Produção de spots de rádio e vinhetas com vozes marcantes para prender a atenção do público.</p>
+        </div>
+        <div class="service-card">
+            <h3>Vídeos com Inteligência Artificial</h3>
+            <p>Criação moderna e de baixo custo de conteúdos cinematográficos para redes sociais e WhatsApp.</p>
+        </div>
+        <div class="service-card">
+            <h3>Endomarketing Estratégico</h3>
+            <p>Alinhe equipes e engaje colaboradores através de comunicação interna automatizada e eficiente.</p>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2026 ManuPlay TV. Todos os direitos reservados.</p>
+        <p>&copy; 2026 ManuPlay TV. Excelência e Padrão Cinematográfico em Mídia Corporativa.</p>
     </footer>
 
 </body>
