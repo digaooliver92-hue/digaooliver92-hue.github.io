@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ManuPlay TV — TV, rádio e vídeo para a sua marca</title>
-<meta name="description" content="Sua loja no ar, com TV, rádio e vídeo da sua marca. Programação completa, locuções, vinhetas e comerciais.">
+<meta name="description" content="Criamos tudo do zero para o seu negócio: TV personalizada com vitrine digital de ofertas, rádio com playlist estratégica, vinhetas e vídeos de alta retenção.">
 <meta name="theme-color" content="#05030d">
 <link rel="icon" href="logo.png">
 <style>
@@ -203,6 +203,40 @@ select option{color:#000}
 footer{padding:40px 0 20px;text-align:center;color:var(--mut);font-size:14px}
 footer img{height:44px;width:auto;margin:0 auto 12px}
 
+/* ---------- v2: tv em loop, avulsos, checkout, m3u ---------- */
+.screen video.tvloop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
+.snd{position:absolute;left:10px;top:10px;z-index:4;width:34px;height:34px;border-radius:50%;background:#000a;font-size:16px;display:none;place-items:center}
+.snd.on{display:grid}
+.card[data-zap],.av{cursor:pointer}
+.sec-sub{margin-top:46px}
+.avs{margin-top:22px;display:grid;gap:12px}
+.av{display:flex;gap:16px;align-items:center;justify-content:space-between;border-radius:var(--r);border:1px solid var(--line);background:var(--card);padding:18px 20px;transition:transform .2s,border-color .3s}
+.av:hover{border-color:rgba(224,64,251,.5);transform:translateY(-3px)}
+.av strong{font-size:18px;display:block;margin-bottom:4px}
+.av p{color:var(--mut);font-size:14px}
+.avp{flex:none;text-align:right;display:grid;gap:6px;justify-items:end}
+.avp b{font-size:22px;color:var(--cya);white-space:nowrap}
+.avp small{color:var(--mut);font-size:12px;margin-top:-4px}
+@media(max-width:560px){.av{flex-direction:column;align-items:stretch}.avp{text-align:left;justify-items:start;grid-template-columns:1fr auto;align-items:center}.avp .btn{grid-row:1/3;grid-column:2}}
+.modal{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;background:rgba(3,2,10,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.modal.on{display:flex}
+.sheet{position:relative;width:min(520px,100%);max-height:92svh;overflow:auto;border-radius:28px 28px 0 0;background:linear-gradient(160deg,#170e3b,#090520);border:1px solid var(--line);padding:26px 22px calc(26px + env(safe-area-inset-bottom));animation:up .35s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translateY(60px);opacity:0}}
+@media(min-width:640px){.modal{align-items:center}.sheet{border-radius:28px}}
+.sheet h3{font-size:22px;padding-right:36px}
+.sheet .tot{font-size:34px;font-weight:800;margin:6px 0 16px}
+.sheet .x{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);font-size:18px}
+.sheet .opts{display:grid;gap:10px}
+.sheet .opts .btn{width:100%;padding:15px 20px}
+.pixbox{display:none;margin-top:16px;gap:12px;text-align:center}
+.pixbox.on{display:grid}
+.qr{margin:0 auto;background:#fff;padding:10px;border-radius:16px;width:min(230px,70vw)}
+.qr svg,.qr img{width:100%;height:auto;display:block}
+.pixbox textarea{height:96px;font-size:12px;resize:none;word-break:break-all}
+.sheet small.hint{color:var(--mut);display:block;margin-top:12px;font-size:13px}
+.m3u{display:grid;gap:8px;margin-bottom:10px}
+.m3u input,.m3u select{padding:11px 12px;font-size:14px}
+.player .st{font-size:12px;color:var(--mut);margin-top:8px}
 /* ---------- dock (menu flutuante) ---------- */
 .dock{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;gap:4px;padding:7px;border-radius:999px;background:rgba(14,9,36,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);box-shadow:0 20px 50px -10px #000}
 .dock a{position:relative;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:21px;transition:.25s}
@@ -240,7 +274,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
     </div>
     <div>
       <h1>Sua loja no ar, com <span class="rot grad-t" id="rot">TV</span><br>da sua marca.</h1>
-      <p class="lead" style="margin-top:18px">Cuidamos da programação inteira: ofertas na tela, música sem repetir, locuções, vinhetas e comerciais. Você escolhe o que divulgar e a gente deixa rodando.</p>
+      <p class="lead" style="margin-top:18px">Criamos tudo do zero para o seu negócio: TV personalizada com vitrine digital de ofertas, rádio com playlist estratégica e locução em vinhetas para converter em vendas, mais vídeos de alta retenção para suas redes sociais.</p>
       <div class="cta" style="margin-top:24px">
         <a class="btn pri" href="#guia">✨ Descobrir meu plano</a>
         <a class="btn ghost" href="#demo">▶ Ver demonstração</a>
@@ -256,6 +290,8 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
       <div class="tv" id="tv">
         <div class="screen">
           <span class="onair">NO AR</span>
+          <video class="tvloop" id="tvloop" muted playsinline hidden></video>
+          <button class="snd" id="snd" aria-label="Ligar ou desligar o som">🔇</button>
           <div class="slide s1 on"><small>SORVETERIA</small><strong>2 bolas + cobertura</strong><span>R$ 12,00</span></div>
           <div class="slide s2"><small>SALÃO DE BELEZA</small><strong>Hidratação + escova</strong><span>a partir de R$ 59,90</span></div>
           <div class="slide s3"><small>FARMÁCIA</small><strong>Leve 3, pague 2</strong><span>em itens selecionados</span></div>
@@ -277,8 +313,8 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 <section id="guia">
   <div class="wrap">
     <span class="eyebrow rv">Guia ManuPlay</span>
-    <h2 class="rv">Responda 2 perguntas e <span class="grad-t">monte o seu canal</span></h2>
-    <p class="lead rv">Toque nas opções. Eu explico o que a ManuPlay faz e indico o melhor caminho para o seu negócio.</p>
+    <h2 class="rv">Descubra o <span class="grad-t">canal ideal</span> para o seu negócio</h2>
+    <p class="lead rv">Toque na sua área de atuação. Mostramos como levamos TV, rádio e vídeos de alta conversão para a sua marca.</p>
     <div class="guide rv">
       <div class="prog"><i id="gprog"></i></div>
       <div class="chat" id="chat"></div>
@@ -291,15 +327,15 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 <section id="servicos">
   <div class="wrap">
     <span class="eyebrow rv">O que fazemos</span>
-    <h2 class="rv">Tudo de áudio e vídeo que a sua loja precisa</h2>
-    <p class="lead rv">Do canal que fica ligado o dia inteiro ao comercial que lança uma promoção. Uma equipe só, a sua marca em todo lugar.</p>
+    <h2 class="rv">O ecossistema completo de mídia que a sua marca merece</h2>
+    <p class="lead rv">Do canal de TV exclusivo rodando no ponto de venda até a produção de vídeos cinematográficos e 3D. Soluções sob medida para elevar o patamar do seu negócio e converter mais.</p>
     <div class="grid">
-      <article class="card rv"><div class="ic">📺</div><h3>TV Indoor</h3><p>Canal de TV com a logo da loja, ofertas, avisos e comerciais em loop. Roda sem internet depois de baixado.</p><div class="from">R$ 149/mês</div></article>
-      <article class="card rv"><div class="ic">📻</div><h3>Rádio Indoor</h3><p>Música sem repetir e locuções comerciais entre as faixas, direto no ambiente.</p><div class="from">R$ 129/mês</div></article>
-      <article class="card rv"><div class="ic">🌐</div><h3>Web rádio completa</h3><p>Sua rádio própria no ar, com programação, vinhetas e link para ouvir de qualquer lugar.</p><div class="from">Sob consulta</div></article>
-      <article class="card rv"><div class="ic">🎙️</div><h3>Vinheta e identidade</h3><p>Vinheta de rádio ou de TV com a voz e o som da sua marca.</p><div class="from">a partir de R$ 60</div></article>
-      <article class="card rv"><div class="ic">📣</div><h3>Comercial de rádio</h3><p>Roteiro, locução e trilha prontos para tocar na sua programação.</p><div class="from">a partir de R$ 120</div></article>
-      <article class="card rv"><div class="ic">🎬</div><h3>Vídeo com IA</h3><p>Vídeos em 3D, estilo Pixar ou cinema, para impressionar nas redes e na TV da loja.</p><div class="from">a partir de R$ 350</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse na TV Indoor Personalizada. Pode me explicar como funciona?"><div class="ic">📺</div><h3>TV Indoor Personalizada</h3><p>Sua própria emissora passando na tela da loja. Exiba ofertas diárias, campanhas, vitrine digital de produtos e avisos com uma identidade visual moderna e profissional. Roda mesmo offline.</p><div class="from">Solicitar orçamento →</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse na Rádio Indoor Comercial. Pode me explicar como funciona?"><div class="ic">📻</div><h3>Rádio Indoor Comercial</h3><p>Sonorização estratégica para o seu ponto de venda. Playlist alinhada ao seu público, inserção de vinhetas e locução de ofertas na medida certa para reter o cliente e alavancar as vendas.</p><div class="from">Solicitar orçamento →</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse na Web Rádio Completa (24h). Pode me explicar como funciona?"><div class="ic">🌐</div><h3>Web Rádio Completa (24h)</h3><p>Sua rádio própria no ar para qualquer nicho ou franquia. Programação 100% personalizada, locução profissional e link dedicado para seus clientes ouvirem de qualquer lugar.</p><div class="from">Solicitar orçamento →</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse em Vinhetas e Identidade Sonora. Pode me explicar como funciona?"><div class="ic">🎙️</div><h3>Vinhetas &amp; Identidade Sonora</h3><p>Dê voz e peso para a sua marca. Vinhetas de rádio e TV impactantes com locução profissional e efeitos sonoros marcantes para fixar sua marca na mente do cliente.</p><div class="from">Solicitar orçamento →</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse em Spots e Comerciais de Rádio. Pode me explicar como funciona?"><div class="ic">📣</div><h3>Spots &amp; Comerciais de Rádio</h3><p>Roteiro persuasivo, locução de alto impacto e trilha sonora pronta para rodar na sua programação ou em campanhas externas.</p><div class="from">Solicitar orçamento →</div></article>
+      <article class="card rv" data-zap="Olá! Tenho interesse em Vídeos 3D, Pixar e Cinematográficos. Pode me explicar como funciona?"><div class="ic">🎬</div><h3>Vídeos 3D, Pixar &amp; Cinematográficos</h3><p>Produções audiovisuais de alto padrão para impressionar no ponto de venda e destravar o engajamento com vídeos de alta retenção nas redes sociais.</p><div class="from">Solicitar orçamento →</div></article>
     </div>
   </div>
 </section>
@@ -335,26 +371,38 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
     <span class="eyebrow rv">Planos mensais</span>
     <h2 class="rv">Mensalidade simples, <span class="grad-t">sem fidelidade</span></h2>
     <p class="lead rv">A instalação é combinada no briefing.</p>
-    <div class="plans">
-      <div class="plan rv" id="p-tv"><h3>TV Indoor</h3><div class="pr">R$ 149<small> /mês</small></div>
-        <ul><li>Logo e identidade da loja</li><li>Ofertas e avisos atualizados</li><li>Roda sem internet depois de baixado</li><li>Suporte no WhatsApp</li></ul>
-        <a class="btn pri" data-zap="Olá! Quero contratar o plano TV Indoor (R$ 149/mês).">Contratar</a></div>
-      <div class="plan rv" id="p-radio"><h3>Rádio Indoor</h3><div class="pr">R$ 129<small> /mês</small></div>
-        <ul><li>Playlist ampla sem repetição</li><li>Locuções a cada X músicas</li><li>Roda sem internet</li><li>Troca de campanhas quando precisar</li></ul>
-        <a class="btn pri" data-zap="Olá! Quero contratar o plano Rádio Indoor (R$ 129/mês).">Contratar</a></div>
-      <div class="plan hot rv" id="p-combo"><span class="tag">Mais pedido</span><h3>TV + Rádio</h3><div class="pr">R$ 229<small> /mês</small></div>
-        <ul><li>Tudo do TV Indoor</li><li>Tudo do Rádio Indoor</li><li>Uma identidade para os dois</li><li>Prioridade no atendimento</li></ul>
-        <a class="btn" data-zap="Olá! Quero contratar o plano TV + Rádio (R$ 229/mês).">Contratar</a></div>
+    <div class="plans" id="plans"></div>
+
+    <div class="sec-sub">
+      <span class="eyebrow rv">Sob medida</span>
+      <h2 class="rv" style="font-size:clamp(24px,5vw,36px)">Serviços avulsos &amp; produções sob medida</h2>
+      <p class="lead rv">Projetos separados, contratados de forma avulsa conforme a sua necessidade.</p>
+      <div class="avs" id="avs"></div>
     </div>
-    <div class="extras rv">
-      <div><span>Vinheta de rádio ou TV</span><b>R$ 60,00</b></div>
-      <div><span>Comercial de rádio</span><b>R$ 120,00</b></div>
-      <div><span>Comercial de vídeo</span><b>R$ 250,00</b></div>
-      <div><span>Vídeo com IA (3D, Pixar, cinema)</span><b>R$ 350,00</b></div>
-    </div>
-    <p class="note">Pagamento por Pix ou cartão: pedimos o link ou o QR Code pelo WhatsApp na hora de fechar.</p>
+    <p class="note">Pagamento direto na conta: Pix (QR Code e copia e cola) ou cartão por link seguro. Ao tocar em Contratar você escolhe como pagar ou fala no WhatsApp.</p>
   </div>
 </section>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-nome">
+    <button class="x" id="m-x" aria-label="Fechar">✕</button>
+    <small style="color:var(--cya);font-weight:700;letter-spacing:.15em">FECHAR PEDIDO</small>
+    <h3 id="m-nome"></h3>
+    <div class="tot grad-t" id="m-val"></div>
+    <div class="opts">
+      <button class="btn pri" id="m-pix">⚡ Pagar com Pix</button>
+      <button class="btn amb" id="m-card">💳 Pagar no cartão</button>
+      <button class="btn ghost" id="m-zap">💬 Falar no WhatsApp</button>
+    </div>
+    <div class="pixbox" id="pixbox">
+      <div class="qr" id="m-qr" hidden></div>
+      <textarea id="m-code" readonly></textarea>
+      <button class="btn pri" id="m-copy">Copiar Pix copia e cola</button>
+      <button class="btn ghost" id="m-proof">Já paguei: enviar comprovante</button>
+    </div>
+    <small class="hint" id="m-hint">Pix cai direto na conta, sem intermediário. Depois de pagar, envie o comprovante no WhatsApp para começarmos.</small>
+  </div>
+</div>
 
 <!-- ================= FAQ ================= -->
 <section id="faq">
@@ -365,6 +413,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
       <details><summary>Precisa de internet para funcionar?</summary><p>A programação é baixada no aparelho e continua tocando se a internet cair. Só precisa de conexão para receber as atualizações.</p></details>
       <details><summary>Que aparelho eu preciso?</summary><p>Uma Smart TV, uma TV Box ou até um celular ligado na TV. Ajudamos a escolher o mais simples para você.</p></details>
       <details><summary>Posso trocar as ofertas durante o mês?</summary><p>Pode. Mande a nova promoção pelo WhatsApp e atualizamos a sua programação.</p></details>
+      <details><summary>Como funciona o pagamento?</summary><p>Você paga direto na nossa conta, por Pix (QR Code ou copia e cola) ou cartão em link seguro. Depois do pagamento, enviamos o briefing e começamos a produção.</p></details>
       <details><summary>Vocês fazem só para loja?</summary><p>Não. Atendemos lojas, restaurantes, clínicas, salões, eventos, igrejas e qualquer lugar que queira comunicar bem.</p></details>
     </div>
   </div>
@@ -378,7 +427,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
     <p class="lead rv">A mensagem abre no WhatsApp já preenchida. Respondemos por lá.</p>
     <form id="form" class="rv">
       <input id="f-nome" placeholder="Seu nome" required autocomplete="name">
-      <select id="f-int"><option>TV Indoor</option><option>Rádio Indoor</option><option>TV + Rádio</option><option>Vinheta de rádio ou TV</option><option>Comercial de rádio</option><option>Comercial de vídeo</option><option>Vídeo com IA</option></select>
+      <select id="f-int"><option>TV Personalizada &amp; Mídia Indoor</option><option>Rádio Indoor &amp; Web Rádio</option><option>TV + Rádio (Pacote Completo)</option><option>Pack de Encartes e Ofertas</option><option>Jingle Comercial</option><option>Vinhetas Curtas com Efeitos</option><option>Vídeos Comerciais, Cinematográficos e 3D</option></select>
       <textarea id="f-msg" rows="4" placeholder="Ex.: quero divulgar a promoção de sexta na minha loja"></textarea>
       <button class="btn amb" type="submit">Abrir no WhatsApp</button>
     </form>
@@ -399,19 +448,73 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 
 <script>
 /* =====================================================
-   CONFIGURAÇÃO — edite aqui
+   CONFIGURAÇÃO — EDITE SÓ AQUI (tudo do site que muda fica neste bloco)
    ===================================================== */
 const CONFIG = {
-  WHATSAPP: "24998238015",           // só números, com 55 + DDD
-  VIDEOS: [                            // links de mp4 / youtube embed
-    {titulo:"Loop PDV / Institucional", tag:"Loop",  tipo:"mp4",    src:""},
-    {titulo:"TV Corporativa",           tag:"Embed", tipo:"iframe", src:""},
-    {titulo:"Stream dedicado",          tag:"Live",  tipo:"mp4",    src:""}
+  WHATSAPP: "24998238015",           // só números: 55 + DDD + número
+
+  /* TV da página inicial: seus vídeos MP4 em loop.
+     Vazio [] = mostra as ofertas de exemplo (sorveteria etc.).
+     Ex.: TV_LOOP: ["videos/loop1.mp4","videos/loop2.mp4"] */
+  TV_LOOP: [],
+
+  /* PAGAMENTO DIRETO NA SUA CONTA */
+  PAGAMENTO: {
+    PIX_CHAVE: "",      // como está cadastrada no banco. Telefone: +5511999998888 | CPF/CNPJ: só números | e-mail | chave aleatória
+    PIX_NOME: "",       // nome do recebedor (igual ao do banco, sem acento, até 25 letras)
+    PIX_CIDADE: "",     // sua cidade (até 15 letras)
+    CARTAO: {           // link de pagamento de cada produto (Mercado Pago, InfinitePay, etc.)
+      tv:"", radio:"", combo:"", encartes:"", jingle:"", vinhetas:"", video3d:""
+    }
+  },
+
+  /* PLAYERS DE VÍDEO: cole MP4 (ex.: "videos/anuncio.mp4" ou https://...), YouTube, .m3u8 ou lista .m3u (IPTV).
+     O tipo é detectado sozinho. */
+  VIDEOS: [
+    {titulo:"Vídeo / Canal 1", tag:"MP4 ou M3U", src:"", loop:true},
+    {titulo:"Vídeo / Canal 2", tag:"MP4 ou M3U", src:""},
+    {titulo:"Vídeo / Canal 3", tag:"MP4 ou M3U", src:""}
   ],
+
+  /* PLAYERS DE ÁUDIO: 2 estações de rádio (link do stream https) + 1 arquivo MP3 */
   AUDIOS: [
-    {titulo:"Web Rádio ao vivo",        tag:"Ao vivo", src:"", loop:false},
-    {titulo:"Playlist comercial",       tag:"Loop",    src:"", loop:true},
-    {titulo:"Spot / trilha exclusiva",  tag:"Spot",    src:"", loop:false}
+    {titulo:"Rádio · Estação 1", tag:"Ao vivo", src:""},
+    {titulo:"Rádio · Estação 2", tag:"Ao vivo", src:""},
+    {titulo:"Spot / Trilha (MP3)", tag:"MP3", src:"", loop:true}
+  ],
+
+  /* PLANOS MENSAIS */
+  PLANOS: [
+    {id:"tv", nome:"TV Personalizada & Mídia Indoor", curto:"TV Personalizada", valor:370,
+     itens:[
+      "Programação totalmente programada e personalizada (não é só oferta: inclui vídeos das redes sociais, avisos, formas de pagamento e campanhas).",
+      "Identidade visual exclusiva para o seu espaço.",
+      "Atualização rápida de novas ofertas e campanhas sempre que solicitado.",
+      "Fácil de instalar: roda direto por aplicativo com configuração rápida e prática."]},
+    {id:"radio", nome:"Rádio Indoor & Web Rádio Profissional", curto:"Rádio Indoor & Web Rádio", valor:320,
+     itens:[
+      "Emissora completa do zero: estrutura robusta tanto para sonorizar o seu comércio quanto para quem é radialista e quer colocar sua própria web rádio no ar com som de rádio FM de grande porte.",
+      "Curadoria musical sob medida: você escolhe os estilos, os lançamentos, as músicas novas e o formato ideal para o seu público.",
+      "Produção vocal de peso: locução profissional marcante, vinhetas personalizadas, jingles e spots comerciais de alto impacto.",
+      "Agilidade total: troca de campanhas, comerciais e inserção de novas vozes rapidamente sempre que você solicitar."]},
+    {id:"combo", nome:"TV + Rádio (Pacote Completo com Desconto)", curto:"TV + Rádio", valor:600, destaque:true, tag:"Mais pedido",
+     itens:[
+      "Toda a potência e estrutura avançada da TV Personalizada e vitrine digital.",
+      "Toda a imponência de uma rádio profissional completa no ar, com programação exclusiva.",
+      "Identidade visual e sonora unificadas para dar uma autoridade gigante à sua marca.",
+      "Suporte ágil e prioridade total para atualizar campanhas e ofertas rapidamente."]}
+  ],
+
+  /* SERVIÇOS AVULSOS */
+  AVULSOS: [
+    {id:"encartes", nome:"Combo Pack de Encartes e Ofertas Digitalizadas", valor:150, obs:"ou sob consulta",
+     desc:"Artes digitais personalizadas para qualquer segmento. Você nos envia os produtos e criamos o pack completo de artes e encartes focados para postagens em redes sociais e divulgação."},
+    {id:"jingle", nome:"Jingle Comercial Personalizado", valor:150,
+     desc:"Música e trilha exclusiva criada do zero para a sua marca, empresa ou evento, com letra e arranjo sob medida."},
+    {id:"vinhetas", nome:"Vinhetas Curtas com Efeitos Sonoros", valor:90,
+     desc:"Vinhetas estratégicas de alto impacto para chamadas de eventos, aberturas ou comerciais de rádio, equipadas com efeitos de áudio profissionais."},
+    {id:"video3d", nome:"Vídeos Comerciais, Cinematográficos e 3D (Estilo Pixar)", valor:350,
+     desc:"Produção audiovisual avançada de alto padrão e vídeos focados em alta retenção para turbinar o engajamento nas redes sociais e impressionar no ponto de venda."}
   ]
 };
 /* ===================================================== */
@@ -474,14 +577,101 @@ function d(){t+=.012;x.clearRect(0,0,W,H);x.lineWidth=1.6;
  x.globalAlpha=1;if(!reduce)requestAnimationFrame(d)}
 d()})();
 
-/* players */
+/* ---------- bibliotecas carregadas só quando precisa ---------- */
+const LIBS={hls:"https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js",qr:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"};
+const libC={};
+function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=LIBS[k];s.onload=ok;s.onerror=()=>{delete libC[k];no()};document.head.appendChild(s)}))}
+
+/* ---------- TV da página inicial: MP4 em loop ---------- */
+(function(){const L=CONFIG.TV_LOOP||[];if(!L.length)return;const v=$('#tvloop'),sn=$('#snd');let i=0;
+ v.hidden=false;$$('.slide').forEach(s=>s.style.display='none');sn.classList.add('on');
+ const play=()=>{v.src=L[i];v.play().catch(()=>{})};
+ if(L.length===1)v.loop=true;
+ v.addEventListener('ended',()=>{i=(i+1)%L.length;play()});
+ v.addEventListener('error',()=>{if(L.length>1){i=(i+1)%L.length;play()}});
+ sn.onclick=()=>{v.muted=!v.muted;sn.textContent=v.muted?'🔇':'🔊'};play()})();
+
+/* ---------- players de vídeo (MP4, YouTube, HLS, lista M3U) e áudio ---------- */
+function kind(p){const f=(p.src||'');const s=f.toLowerCase().split('?')[0];
+ if(p.tipo&&p.tipo!=='auto')return p.tipo;
+ if(/youtube\.com|youtu\.be/.test(f))return 'iframe';
+ if(/get\.php|type=m3u/i.test(f)||/\.m3u$/.test(s))return 'm3u';
+ if(/\.m3u8$/.test(s))return 'hls';return 'mp4'}
+function ytEmbed(u){const m=u.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/);return m?'https://www.youtube.com/embed/'+m[1]:u}
+async function playUrl(v,url,st){
+ const hls=/\.m3u8(\?|$)/i.test(url);
+ if(v._h){v._h.destroy();v._h=null}
+ if(hls&&!v.canPlayType('application/vnd.apple.mpegurl')){
+  try{await lib('hls')}catch(e){st('Não foi possível carregar o leitor de canais. Verifique a internet.');return}
+  if(window.Hls&&Hls.isSupported()){const h=new Hls();v._h=h;h.loadSource(url);h.attachMedia(v);
+   h.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)st('Este canal não abriu. Ele pode estar fora do ar ou bloquear acesso por sites.')});
+   v.play().catch(()=>{});return}}
+ v.onerror=()=>st('Este vídeo não abriu. Confira o link (precisa ser https e público).');
+ v.src=url;v.play().catch(()=>{})}
+async function loadM3U(url){const r=await fetch(url);if(!r.ok)throw 0;const t=await r.text();const out=[];let nome='';
+ t.split(/\r?\n/).forEach(l=>{l=l.trim();if(l.startsWith('#EXTINF'))nome=(l.split(',').slice(1).join(',')||'').trim();
+  else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:l});nome=''}});return out}
+function renderVideo(p,box){
+ if(!p.src){box.insertAdjacentHTML('beforeend','<div class="soon">Em breve<br>Peça uma demonstração pelo WhatsApp</div>');return}
+ const k=kind(p);
+ if(k==='iframe'){box.insertAdjacentHTML('beforeend',`<iframe src="${ytEmbed(p.src)}" allowfullscreen loading="lazy"></iframe>`);return}
+ box.insertAdjacentHTML('beforeend',(k==='m3u'?'<div class="m3u"><input type="search" placeholder="Buscar canal"><select></select></div>':'')+`<video controls playsinline preload="metadata" ${p.loop&&k!=='m3u'?'autoplay muted loop':''}></video><div class="st"></div>`);
+ const v=$('video',box),st=t=>$('.st',box).textContent=t;
+ if(k!=='m3u'){playUrl(v,p.src,st);return}
+ const sel=$('select',box),q=$('input',box);let all=[];
+ const fill=()=>{const f=q.value.toLowerCase();sel.innerHTML='';all.filter(c=>c.n.toLowerCase().includes(f)).slice(0,500).forEach(c=>{const o=document.createElement('option');o.value=c.u;o.textContent=c.n;sel.appendChild(o)})};
+ st('Carregando lista de canais...');
+ loadM3U(p.src).then(l=>{all=l;if(!l.length){st('A lista veio vazia.');return}fill();st(l.length+' canais. Escolha um para assistir.');
+  sel.onchange=()=>{st('');playUrl(v,sel.value,st)};q.oninput=fill;sel.value&&playUrl(v,sel.value,st)})
+ .catch(()=>st('Não consegui abrir a lista. O link precisa ser https e a lista precisa liberar acesso por sites (CORS). Se não abrir, me mande o link que eu ajusto.'))}
 (function(){
  const v=$('#pl-v'),a=$('#pl-a');
- CONFIG.VIDEOS.forEach(p=>{const d=document.createElement('div');d.className='player';
-  d.innerHTML=`<h3>${p.titulo}<em>${p.tag}</em></h3>`+(p.src?(p.tipo==='iframe'?`<iframe src="${p.src}" allowfullscreen loading="lazy"></iframe>`:`<video controls playsinline preload="none" ${p.tag==='Loop'?'autoplay muted loop':''} src="${p.src}"></video>`):`<div class="soon">Vídeo em breve<br>Peça uma demonstração pelo WhatsApp</div>`);v.appendChild(d)});
+ CONFIG.VIDEOS.forEach(p=>{const d=document.createElement('div');d.className='player';d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`;v.appendChild(d);renderVideo(p,d)});
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
-  d.innerHTML=`<h3>${p.titulo}<em>${p.tag}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${p.src}"></audio>`:`<div class="soon a">Áudio em breve</div>`);a.appendChild(d)});
+  d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${p.src}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
+ $$('#pl-a audio').forEach(x=>x.addEventListener('play',()=>$$('#pl-a audio').forEach(y=>{if(y!==x)y.pause()})));
  $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#pl-v').classList.toggle('on',b.dataset.t==='v');$('#pl-a').classList.toggle('on',b.dataset.t==='a')});
+})();
+
+/* ---------- planos e avulsos (gerados do CONFIG) ---------- */
+const fmt=v=>'R$ '+(Number.isInteger(+v)?(+v):(+v).toFixed(2).replace('.',','));
+const fmt2=v=>'R$ '+(+v).toFixed(2).replace('.',',');
+const li=t=>{const m=t.match(/^([^:]{3,34}):\s(.*)$/);return '<li>'+(m?`<b>${m[1]}:</b> ${m[2]}`:t)+'</li>'};
+$('#plans').innerHTML=CONFIG.PLANOS.map(p=>`<div class="plan rv${p.destaque?' hot':''}" id="p-${p.id}">${p.tag?`<span class="tag">${p.tag}</span>`:''}<h3>${p.nome}</h3><div class="pr">${fmt(p.valor)}<small> /mês</small></div><ul>${p.itens.map(li).join('')}</ul><a class="btn${p.destaque?'':' pri'}" data-buy="${p.id}">Contratar</a></div>`).join('');
+$('#avs').innerHTML=CONFIG.AVULSOS.map(p=>`<a class="av rv" data-buy="${p.id}"><div><strong>${p.nome}</strong><p>${p.desc}</p></div><div class="avp"><b>${fmt2(p.valor)}</b>${p.obs?`<small>${p.obs}</small>`:''}<span class="btn amb sm">Contratar</span></div></a>`).join('');
+$$('#plans .rv,#avs .rv').forEach(el=>io.observe(el));
+
+/* ---------- pagamento direto: Pix (copia e cola + QR) e cartão ---------- */
+function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF}return c.toString(16).toUpperCase().padStart(4,'0')}
+const tlv=(id,v)=>id+String(v.length).padStart(2,'0')+v;
+const limpa=(s,n)=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9 ]/g,'').toUpperCase().slice(0,n);
+function pixPayload(chave,nome,cidade,valor){
+ let p=tlv('00','01')+tlv('01','11')+tlv('26',tlv('00','br.gov.bcb.pix')+tlv('01',chave))+tlv('52','0000')+tlv('53','986')+tlv('54',(+valor).toFixed(2))+tlv('58','BR')+tlv('59',limpa(nome,25)||'RECEBEDOR')+tlv('60',limpa(cidade,15)||'BRASIL')+tlv('62',tlv('05','***'))+'6304';
+ return p+crc16(p)}
+(function(){
+ const M=$('#modal'),PG=CONFIG.PAGAMENTO||{};let cur=null;
+ const pedido=()=>`${cur.nome} (${fmt2(cur.valor)}${cur.mensal?'/mês':''})`;
+ function abrir(id){cur=CONFIG.PLANOS.concat(CONFIG.AVULSOS).find(x=>x.id===id);if(!cur)return;
+  cur.mensal=CONFIG.PLANOS.indexOf(cur)>-1;
+  $('#m-nome').textContent=cur.nome;$('#m-val').textContent=fmt2(cur.valor)+(cur.mensal?' /mês':'')+(cur.obs?' ('+cur.obs+')':'');
+  $('#pixbox').classList.remove('on');$('#m-qr').hidden=true;
+  $('#m-pix').style.display=PG.PIX_CHAVE?'':'none';
+  $('#m-hint').textContent=PG.PIX_CHAVE?'O Pix cai direto na conta, sem intermediário. Depois de pagar, envie o comprovante no WhatsApp para começarmos.':'Toque em WhatsApp e enviamos a chave Pix ou o link do cartão na hora.';
+  M.classList.add('on');M.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
+ function fechar(){M.classList.remove('on');M.setAttribute('aria-hidden','true');document.body.style.overflow=''}
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(b){e.preventDefault();abrir(b.dataset.buy)}});
+ $('#m-x').onclick=fechar;M.addEventListener('click',e=>{if(e.target===M)fechar()});addEventListener('keydown',e=>{if(e.key==='Escape')fechar()});
+ $('#m-zap').onclick=()=>zap(`Olá! Quero contratar: ${pedido()}. Podemos fechar?`);
+ $('#m-card').onclick=()=>{const l=(PG.CARTAO||{})[cur.id];l?window.open(l,'_blank','noopener'):zap(`Olá! Quero pagar no cartão: ${pedido()}. Pode me mandar o link de pagamento?`)};
+ $('#m-proof').onclick=()=>zap(`Olá! Acabei de pagar via Pix: ${pedido()}. Segue o comprovante.`);
+ $('#m-pix').onclick=async()=>{
+  const code=pixPayload(PG.PIX_CHAVE,PG.PIX_NOME,PG.PIX_CIDADE,cur.valor);
+  $('#m-code').value=code;$('#pixbox').classList.add('on');
+  try{await lib('qr');const q=qrcode(0,'M');q.addData(code);q.make();$('#m-qr').innerHTML=q.createSvgTag(6,0);$('#m-qr').hidden=false}catch(e){$('#m-qr').hidden=true}
+  $('#pixbox').scrollIntoView({behavior:'smooth',block:'nearest'})};
+ $('#m-copy').onclick=async()=>{const t=$('#m-code').value,b=$('#m-copy');
+  try{await navigator.clipboard.writeText(t)}catch(e){$('#m-code').select();document.execCommand('copy')}
+  b.textContent='Copiado ✓ Cole no app do banco';setTimeout(()=>b.textContent='Copiar Pix copia e cola',2600)};
 })();
 
 /* formulário */
@@ -492,31 +682,37 @@ $('#form').addEventListener('submit',e=>{e.preventDefault();
 (function(){
  const chat=$('#chat'),chips=$('#chips'),prog=$('#gprog');
  const state={};
- const negocios=[["🛍️","Loja"],["🍔","Restaurante ou lanchonete"],["💈","Salão, clínica ou academia"],["⛪","Igreja ou evento"],["✨","Outro"]];
+ const negocios=[["🛒","Comércio & Varejo"],["🍔","Alimentação & Franquias"],["💼","Serviços, Clínicas & Academias"],["⛪","Comunidades & Eventos"],["✨","Outro Segmento"]];
  const quer=[["📺","Só TV"],["📻","Só rádio"],["🔥","TV e rádio"],["🎬","Vídeo ou comercial"]];
  const sleep=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
  function add(cls,txt){const m=document.createElement('div');m.className='msg '+cls;m.textContent=txt;chat.appendChild(m);return m}
  async function bot(txt){const t=document.createElement('div');t.className='msg bot typing';t.innerHTML='<i></i><i></i><i></i>';chat.appendChild(t);await sleep(650);t.remove();return add('bot',txt)}
  function opts(list,cb){chips.innerHTML='';list.forEach(([ic,l],i)=>{const b=document.createElement('button');b.className='chip';b.style.animationDelay=i*70+'ms';b.textContent=ic+' '+l;b.onclick=()=>{chips.innerHTML='';cb(l)};chips.appendChild(b)})}
  async function start(){chat.innerHTML='';chips.innerHTML='';prog.style.width='8%';
-  await bot("Oi! Eu sou o guia da ManuPlay. A gente cuida de TV, rádio e vídeo para a sua marca, do conteúdo ao ar. 🎬");
-  await bot("Primeiro: que tipo de negócio é o seu?");
+  await bot("Olá! Eu sou o guia da ManuPlay. Nós criamos a sua própria TV e Rádio do zero, com vitrine digital de ofertas, playlist estratégica e vídeos que geram resultados reais.");
+  await bot("Para começar: qual é o seu ramo de atuação?");
   opts(negocios,async n=>{state.n=n;add('me',n);prog.style.width='45%';
-   await bot("Boa! Para "+n.toLowerCase()+", a tela e o som certos fazem o cliente parar, ouvir e comprar. O que você quer colocar no ar?");
+   await bot("Ótimo! Em "+n+", a tela e o som certos fazem o cliente parar, ouvir e comprar. O que você quer colocar no ar?");
    opts(quer,async q=>{state.q=q;add('me',q);prog.style.width='85%';await bot("Perfeito, já montei uma indicação para você:");result();prog.style.width='100%'})})}
  function result(){
+  const P=Object.fromEntries(CONFIG.PLANOS.map(p=>[p.id,p]));
+  const min=Math.min(...CONFIG.AVULSOS.map(a=>a.valor));
+  const plano=id=>({t:P[id].nome,p:fmt(P[id].valor)+"/mês",id:"p-"+id,buy:id});
   const R={
-   "Só TV":{t:"TV Indoor",p:"R$ 149/mês",l:["Canal de TV com a logo e as ofertas da loja","Avisos e comerciais em loop","Roda sem internet depois de baixado"],id:"p-tv"},
-   "Só rádio":{t:"Rádio Indoor",p:"R$ 129/mês",l:["Música sem repetir no ambiente","Locuções comerciais entre as faixas","Troca de campanhas quando precisar"],id:"p-radio"},
-   "TV e rádio":{t:"TV + Rádio",p:"R$ 229/mês",l:["Tela e som com a mesma identidade","Ofertas na TV e locução na rádio","Prioridade no atendimento"],id:"p-combo"},
-   "Vídeo ou comercial":{t:"Vídeo e comercial sob medida",p:"a partir de R$ 60",l:["Vinheta a partir de R$ 60, comercial de rádio R$ 120","Comercial de vídeo R$ 250","Vídeo com IA em 3D ou estilo cinema R$ 350"],id:"servicos"}
+   "Só TV":{...plano("tv"),l:["Programação personalizada com vitrine digital de ofertas","Vídeos das redes sociais, avisos e campanhas","Roda direto por aplicativo, instalação rápida"]},
+   "Só rádio":{...plano("radio"),l:["Playlist e curadoria musical sob medida","Locução, vinhetas, jingles e spots de alto impacto","Serve para o comércio e para web rádio completa"]},
+   "TV e rádio":{...plano("combo"),l:["TV personalizada e rádio profissional juntas","Identidade visual e sonora unificadas","Pacote com desconto e prioridade no atendimento"]},
+   "Vídeo ou comercial":{t:"Produções sob medida",p:"a partir de "+fmt2(min),id:"avs",l:CONFIG.AVULSOS.map(a=>a.nome+" — "+fmt2(a.valor))}
   }[state.q];
   const d=document.createElement('div');d.className='rec';
   d.innerHTML=`<small style="color:var(--cya);font-weight:700;letter-spacing:.15em">INDICAÇÃO PARA VOCÊ</small><h3>${R.t}</h3><div class="price grad-t">${R.p}</div><ul>${R.l.map(x=>`<li>${x}</li>`).join('')}</ul>`;
-  const b=document.createElement('a');b.className='btn amb';b.textContent='Falar no WhatsApp com essa escolha';
-  b.onclick=()=>zap(`Olá! Usei o guia do site. Meu negócio: ${state.n}. Quero: ${state.q}. Indicação: ${R.t} (${R.p}). Podemos conversar?`);
-  d.appendChild(b);
-  const s=document.createElement('a');s.className='btn ghost';s.style.marginLeft='8px';s.textContent='Ver detalhes';s.href='#'+R.id;d.appendChild(s);
+  const row=document.createElement('div');row.style.cssText='display:flex;flex-wrap:wrap;gap:8px';
+  const b=document.createElement('a');b.className='btn amb';
+  if(R.buy){b.textContent='Contratar agora';b.dataset.buy=R.buy}else{b.textContent='Ver serviços avulsos';b.href='#avs'}
+  const w=document.createElement('a');w.className='btn pri';w.textContent='Falar no WhatsApp';
+  w.onclick=()=>zap(`Olá! Usei o guia do site. Meu ramo: ${state.n}. Quero: ${state.q}. Indicação: ${R.t} (${R.p}). Podemos conversar?`);
+  const s=document.createElement('a');s.className='btn ghost';s.textContent='Ver detalhes';s.href='#'+R.id;
+  row.append(b,w,s);d.appendChild(row);
   chat.appendChild(d);
   const r=document.createElement('a');r.className='reset';r.textContent='↺ Refazer o guia';r.onclick=()=>start();chips.appendChild(r)}
  const go=new IntersectionObserver(e=>{if(e[0].isIntersecting){go.disconnect();start()}},{threshold:.25});go.observe($('.guide'));
