@@ -472,14 +472,14 @@ const CONFIG = {
      O tipo é detectado sozinho. */
   VIDEOS: [
     {titulo:"Vídeo / Canal 1", tag:"MP4 ou M3U", src:"", loop:true},
-    {titulo:"TV Online", tag:"M3U", src:"https://tvdigao92.duckdns.org:8181/live/tvonline/lista.m3u"},
-    {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8181/live/midia_indoor/lista.m3u"}
+    {titulo:"TV Online", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/tvonline/lista.m3u"},
+    {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/midia_indoor/lista.m3u"}
   ],
 
   /* PLAYERS DE ÁUDIO: 2 estações de rádio (link do stream https) + 1 arquivo MP3 */
   AUDIOS: [
-    {titulo:"Rádio Audio Market", tag:"Ao vivo", src:"https://tvdigao92.duckdns.org/listen/audiomarket/radio.mp3"},
-    {titulo:"Rádio · Estação 2", tag:"Ao vivo", src:""},
+    {titulo:"Rádio Audio Market", tag:"Ao vivo", src:"https://tvdigao92.duckdns.org:8443/listen/audiomarket/radio.mp3"},
+    {titulo:"Papel e Louvor", tag:"Ao vivo", src:"https://tvdigao92.duckdns.org:8443/listen/papel_e_louvor/radio.mp3"},
     {titulo:"Spot / Trilha (MP3)", tag:"MP3", src:"", loop:true}
   ],
 
@@ -579,8 +579,8 @@ d()})();
 
 /* ---------- bibliotecas carregadas só quando precisa ---------- */
 const LIBS={hls:"https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js",qr:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"};
-const HTTPS_DE=Object.assign({"167.99.4.209":"tvdigao92.duckdns.org"},CONFIG.REESCREVER||{});
-function seguro(u,base){try{const x=new URL(u,base||location.href);if(x.protocol==='http:'&&location.protocol==='https:'&&HTTPS_DE[x.hostname]){x.protocol='https:';x.hostname=HTTPS_DE[x.hostname]}return x.href}catch(e){return u}}
+const ORIGENS=Object.assign({"http://167.99.4.209:8181":"https://tvdigao92.duckdns.org:8443","http://167.99.4.209":"https://tvdigao92.duckdns.org:8443"},CONFIG.REESCREVER||{});
+function seguro(u,base){try{const x=new URL(u,base||location.href);const o=ORIGENS[x.origin];if(o&&location.protocol==='https:')return o+x.pathname+x.search+x.hash;return x.href}catch(e){return u}}
 async function sondar(u){const c=new AbortController();const t=setTimeout(()=>c.abort(),5000);
  try{await fetch(u,{mode:'no-cors',signal:c.signal});clearTimeout(t);c.abort();return 'ok'}catch(e){clearTimeout(t);return e.name==='AbortError'?'lento':'falha'}}
 const libC={};
