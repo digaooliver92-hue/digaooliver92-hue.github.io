@@ -472,8 +472,8 @@ const CONFIG = {
      O tipo é detectado sozinho. */
   VIDEOS: [
     {titulo:"Vídeo / Canal 1", tag:"MP4 ou M3U", src:"", loop:true},
-    {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8181/live/tvonline/lista.m3u"},
-    {titulo:"Vídeo / Canal 3", tag:"MP4 ou M3U", src:""}
+    {titulo:"TV Online", tag:"M3U", src:"https://tvdigao92.duckdns.org:8181/live/tvonline/lista.m3u"},
+    {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8181/live/midia_indoor/lista.m3u"}
   ],
 
   /* PLAYERS DE ÁUDIO: 2 estações de rádio (link do stream https) + 1 arquivo MP3 */
@@ -581,6 +581,8 @@ d()})();
 const LIBS={hls:"https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js",qr:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"};
 const HTTPS_DE=Object.assign({"167.99.4.209":"tvdigao92.duckdns.org"},CONFIG.REESCREVER||{});
 function seguro(u,base){try{const x=new URL(u,base||location.href);if(x.protocol==='http:'&&location.protocol==='https:'&&HTTPS_DE[x.hostname]){x.protocol='https:';x.hostname=HTTPS_DE[x.hostname]}return x.href}catch(e){return u}}
+async function sondar(u){const c=new AbortController();const t=setTimeout(()=>c.abort(),5000);
+ try{await fetch(u,{mode:'no-cors',signal:c.signal});clearTimeout(t);c.abort();return 'ok'}catch(e){clearTimeout(t);return e.name==='AbortError'?'lento':'falha'}}
 const libC={};
 function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=LIBS[k];s.onload=ok;s.onerror=()=>{delete libC[k];no()};document.head.appendChild(s)}))}
 
@@ -612,7 +614,7 @@ async function playUrl(v,url,st){
    v.play().catch(()=>{});return}}
  v.onerror=()=>st('Este vídeo não abriu: '+url.slice(0,90));
  v.src=url;v.play().catch(()=>{})}
-async function loadM3U(url){url=seguro(url);const r=await fetch(url);if(!r.ok)throw 0;const t=await r.text();const out=[];let nome='';
+async function loadM3U(url){url=seguro(url);const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();const out=[];let nome='';
  t.split(/\r?\n/).forEach(l=>{l=l.trim();if(l.startsWith('#EXTINF'))nome=(l.split(',').slice(1).join(',')||'').trim();
   else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:seguro(l,url)});nome=''}});return out}
 function renderVideo(p,box){
@@ -627,13 +629,16 @@ function renderVideo(p,box){
  st('Carregando lista de canais...');
  loadM3U(p.src).then(l=>{all=l;if(!l.length){st('A lista veio vazia.');return}fill();st(l.length+' canais. Escolha um para assistir.');
   sel.onchange=()=>{st('');playUrl(v,sel.value,st)};q.oninput=fill;sel.value&&playUrl(v,sel.value,st)})
- .catch(()=>st('Não consegui abrir a lista. O link precisa ser https e a lista precisa liberar acesso por sites (CORS). Se não abrir, me mande o link que eu ajusto.'))}
+ .catch(async e=>{const u=seguro(p.src);let m;
+  if(/^HTTP /.test(e.message||''))m='o servidor respondeu '+e.message+' (caminho da lista errado?)';
+  else{const r=await sondar(u);m=r==='ok'?'o servidor respondeu, mas não libera acesso ao site (falta CORS: Access-Control-Allow-Origin)':r==='lento'?'o servidor não respondeu a tempo':'não conectou por https (certificado inválido ou porta fechada)'}
+  st('Lista não abriu: '+m+'. '+u.slice(0,80))})}
 (function(){
  const v=$('#pl-v'),a=$('#pl-a');
  CONFIG.VIDEOS.forEach(p=>{const d=document.createElement('div');d.className='player';d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`;v.appendChild(d);renderVideo(p,d)});
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
   d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
- $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}t.textContent='A rádio não abriu: '+(x.currentSrc||x.src).slice(0,90)}));
+ $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}const u=(x.currentSrc||x.src);t.textContent='Testando a rádio...';sondar(u).then(r=>{t.textContent=(r==='ok'?'O servidor respondeu, mas o áudio não abriu (nome da estação ou do ponto de montagem errado, ou formato).':r==='lento'?'O servidor não respondeu a tempo.':'Não conectou por https (certificado inválido ou porta fechada).')+' '+u.slice(0,80)})}));
  $$('#pl-a audio').forEach(x=>x.addEventListener('play',()=>$$('#pl-a audio').forEach(y=>{if(y!==x)y.pause()})));
  $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#pl-v').classList.toggle('on',b.dataset.t==='v');$('#pl-a').classList.toggle('on',b.dataset.t==='a')});
 })();
