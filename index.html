@@ -478,7 +478,7 @@ const CONFIG = {
   /* TV da página inicial: seus vídeos MP4 em loop.
      Vazio [] = mostra as ofertas de exemplo (sorveteria etc.).
      Ex.: TV_LOOP: ["videos/loop1.mp4","videos/loop2.mp4"] */
-  TV_LOOP: [],
+  TV_LOOP: ["videos/hero.mp4"],
 
   /* PAGAMENTO DIRETO NA SUA CONTA */
   PAGAMENTO: {
@@ -493,7 +493,7 @@ const CONFIG = {
   /* PLAYERS DE VÍDEO: cole MP4 (ex.: "videos/anuncio.mp4" ou https://...), YouTube, .m3u8 ou lista .m3u (IPTV).
      O tipo é detectado sozinho. */
   VIDEOS: [
-    {titulo:"Vídeo / Canal 1", tag:"MP4 ou M3U", src:"", loop:true},
+    {titulo:"Vitrine em vídeo vertical", tag:"9:16", formato:"9x16", poster:"videos/vitrine.jpg", src:"videos/vitrine.mp4"},
     {titulo:"TV Online", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/tvonline/lista.m3u"},
     {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/midia_indoor/lista.m3u"}
   ],
