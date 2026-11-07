@@ -579,13 +579,15 @@ d()})();
 
 /* ---------- bibliotecas carregadas só quando precisa ---------- */
 const LIBS={hls:"https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js",qr:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"};
+const HTTPS_DE=Object.assign({"167.99.4.209":"tvdigao92.duckdns.org"},CONFIG.REESCREVER||{});
+function seguro(u,base){try{const x=new URL(u,base||location.href);if(x.protocol==='http:'&&location.protocol==='https:'&&HTTPS_DE[x.hostname]){x.protocol='https:';x.hostname=HTTPS_DE[x.hostname]}return x.href}catch(e){return u}}
 const libC={};
 function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=LIBS[k];s.onload=ok;s.onerror=()=>{delete libC[k];no()};document.head.appendChild(s)}))}
 
 /* ---------- TV da página inicial: MP4 em loop ---------- */
 (function(){const L=CONFIG.TV_LOOP||[];if(!L.length)return;const v=$('#tvloop'),sn=$('#snd');let i=0;
  v.hidden=false;$$('.slide').forEach(s=>s.style.display='none');sn.classList.add('on');
- const play=()=>{v.src=L[i];v.play().catch(()=>{})};
+ const play=()=>{v.src=seguro(L[i]);v.play().catch(()=>{})};
  if(L.length===1)v.loop=true;
  v.addEventListener('ended',()=>{i=(i+1)%L.length;play()});
  v.addEventListener('error',()=>{if(L.length>1){i=(i+1)%L.length;play()}});
@@ -599,6 +601,8 @@ function kind(p){const f=(p.src||'');const s=f.toLowerCase().split('?')[0];
  if(/\.m3u8$/.test(s))return 'hls';return 'mp4'}
 function ytEmbed(u){const m=u.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/);return m?'https://www.youtube.com/embed/'+m[1]:u}
 async function playUrl(v,url,st){
+ url=seguro(url);
+ if(/^http:\/\//i.test(url)&&location.protocol==='https:'){st('Link http bloqueado pelo navegador. Esse endereço precisa de https: '+url.slice(0,80));return}
  const hls=/\.m3u8(\?|$)/i.test(url);
  if(v._h){v._h.destroy();v._h=null}
  if(hls&&!v.canPlayType('application/vnd.apple.mpegurl')){
@@ -606,11 +610,11 @@ async function playUrl(v,url,st){
   if(window.Hls&&Hls.isSupported()){const h=new Hls();v._h=h;h.loadSource(url);h.attachMedia(v);
    h.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)st('Este canal não abriu. Ele pode estar fora do ar ou bloquear acesso por sites.')});
    v.play().catch(()=>{});return}}
- v.onerror=()=>st('Este vídeo não abriu. Confira o link (precisa ser https e público).');
+ v.onerror=()=>st('Este vídeo não abriu: '+url.slice(0,90));
  v.src=url;v.play().catch(()=>{})}
-async function loadM3U(url){const r=await fetch(url);if(!r.ok)throw 0;const t=await r.text();const out=[];let nome='';
+async function loadM3U(url){url=seguro(url);const r=await fetch(url);if(!r.ok)throw 0;const t=await r.text();const out=[];let nome='';
  t.split(/\r?\n/).forEach(l=>{l=l.trim();if(l.startsWith('#EXTINF'))nome=(l.split(',').slice(1).join(',')||'').trim();
-  else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:l});nome=''}});return out}
+  else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:seguro(l,url)});nome=''}});return out}
 function renderVideo(p,box){
  if(!p.src){box.insertAdjacentHTML('beforeend','<div class="soon">Em breve<br>Peça uma demonstração pelo WhatsApp</div>');return}
  const k=kind(p);
@@ -628,7 +632,8 @@ function renderVideo(p,box){
  const v=$('#pl-v'),a=$('#pl-a');
  CONFIG.VIDEOS.forEach(p=>{const d=document.createElement('div');d.className='player';d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`;v.appendChild(d);renderVideo(p,d)});
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
-  d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${p.src}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
+  d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
+ $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}t.textContent='A rádio não abriu: '+(x.currentSrc||x.src).slice(0,90)}));
  $$('#pl-a audio').forEach(x=>x.addEventListener('play',()=>$$('#pl-a audio').forEach(y=>{if(y!==x)y.pause()})));
  $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#pl-v').classList.toggle('on',b.dataset.t==='v');$('#pl-a').classList.toggle('on',b.dataset.t==='a')});
 })();
