@@ -211,15 +211,33 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 .sndhint{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);z-index:4;background:#000c;border:1px solid #ffffff44;padding:8px 14px;border-radius:99px;font-size:13px;font-weight:700;white-space:nowrap;display:none;animation:hintp 1.6s ease-in-out infinite}
 .sndhint.on{display:block}
 @keyframes hintp{50%{transform:translateX(-50%) scale(1.07)}}
-.show{grid-template-columns:1fr}
-@media(min-width:900px){.show{grid-template-columns:minmax(300px,360px) 1fr;align-items:start}}
-.player.vert{max-width:420px;width:100%;margin-inline:auto}
+.show{--S:min(500px,calc(100vw - 88px));grid-template-columns:1fr}
+@media(min-width:900px){.show{--S:min(500px,calc(50vw - 80px));grid-template-columns:auto 1fr;align-items:stretch}}
+.show .duo{grid-column:1/-1}
+.show .side{grid-template-rows:1fr}
+.pitch{display:flex;flex-direction:column;justify-content:center}
+.player.vert{width:max-content;max-width:100%;margin-inline:auto}
 @media(min-width:900px){.player.vert{margin:0}}
-.player .vbox{aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#000}
+.player .vbox{position:relative;height:var(--S,480px);width:calc(var(--S,480px)*9/16);aspect-ratio:auto;border-radius:14px;overflow:hidden;background:#000;margin-inline:auto}
 .player .vbox video{width:100%;height:100%;aspect-ratio:auto;object-fit:contain;border-radius:0;display:block}
 .soon.v{aspect-ratio:9/16}
+.invite{position:absolute;inset:0;z-index:3;border:0;cursor:pointer;display:grid;place-content:center;justify-items:center;gap:10px;color:#fff;font:inherit;background:radial-gradient(circle at 50% 45%,rgba(124,77,255,.35),rgba(5,3,13,.82) 70%);padding:10px;text-align:center}
+.invite .lg{width:40px;filter:drop-shadow(0 4px 10px #000a);animation:invf 2.4s ease-in-out infinite}
+.invite .ring{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:var(--grad);animation:invp 1.8s ease-out infinite}
+.invite .ring i{font-style:normal;font-size:28px;margin-left:4px}
+.invite b{font-size:13px;text-shadow:0 2px 8px #000}
+.invite small{color:var(--mut);font-size:12px;margin-top:-6px}
+@media(max-width:600px){.invite small{display:none}.invite{gap:6px}}
+.invite.off{display:none}
+@keyframes invp{0%{box-shadow:0 0 0 0 rgba(224,64,251,.65)}100%{box-shadow:0 0 0 34px rgba(224,64,251,0)}}
+@keyframes invf{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.invite .ring,.invite .lg{animation:none}}
+
 .side{display:grid;gap:16px;min-width:0}
-.duo{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.duo{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:900px){.duo{grid-template-columns:1fr 1fr}}
+.vw{position:relative;width:min(100%,var(--S,100%));margin-inline:auto;border-radius:14px;overflow:hidden}
+.vw video{display:block}
 .pitch{position:relative;overflow:hidden;border-radius:var(--r);padding:24px;border:1px solid var(--line);background:linear-gradient(160deg,rgba(124,77,255,.2),rgba(24,200,255,.05))}
 .pitch::before{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-90px;background:radial-gradient(circle,rgba(224,64,251,.35),transparent 65%)}
 .pitch h3{position:relative;font-size:clamp(20px,3.4vw,28px);margin-bottom:14px}
@@ -311,7 +329,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
       <div class="tv" id="tv">
         <div class="screen">
           <span class="onair">NO AR</span>
-          <video class="tvloop" id="tvloop" muted playsinline preload="auto" hidden></video>
+          <video class="tvloop" id="tvloop" autoplay muted loop playsinline webkit-playsinline preload="auto" hidden></video>
           <div class="tvctl" id="tvctl"><button id="pp" aria-label="Pausar ou tocar">⏸</button><button id="snd" aria-label="Ligar ou desligar o som">🔇</button></div>
           <div class="sndhint" id="sndhint">🔊 Toque para ligar o som</div>
           <div class="slide s1 on"><small>SORVETERIA</small><strong>2 bolas + cobertura</strong><span>R$ 12,00</span></div>
@@ -615,19 +633,18 @@ function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.
  v.hidden=false;$$('.slide').forEach(s=>s.style.display='none');ctl.classList.add('on');
  if(CONFIG.TV_POSTER)v.poster=CONFIG.TV_POSTER;
  if(L.length===1)v.loop=true;
- const ui=()=>{pp.textContent=v.paused?'▶':'⏸';sn.textContent=v.muted?'🔇':'🔊';hint.classList.toggle('on',v.muted&&!v.paused&&!userMuted)};
+ const ui=()=>{pp.textContent=v.paused?'▶':'⏸';sn.textContent=v.muted?'🔇':'🔊';hint.textContent=v.paused&&!manual?'▶ Toque para iniciar o vídeo':'🔊 Toque para ligar o som';hint.classList.toggle('on',(v.muted&&!v.paused&&!userMuted)||(v.paused&&!manual))};
  ['play','pause','volumechange'].forEach(e=>v.addEventListener(e,ui));
  const tocar=()=>{const r=v.play();if(r&&r.catch)r.catch(()=>{})};
  const carrega=()=>{v.src=seguro(L[i])};
  v.addEventListener('ended',()=>{i=(i+1)%L.length;carrega();tocar()});
  v.addEventListener('error',()=>{erros++;if(erros>=L.length){v.hidden=true;ctl.classList.remove('on');hint.classList.remove('on');$$('.slide').forEach(s=>s.style.display='')}else{i=(i+1)%L.length;carrega();tocar()}});
- carrega();
- /* tenta com som; se o navegador bloquear, começa mudo e liga o som no primeiro toque */
- v.muted=false;
- const r=v.play();
- if(r&&r.catch)r.catch(()=>{v.muted=true;const r2=v.play();if(r2&&r2.catch)r2.catch(()=>{});ui()});
+ carrega();v.muted=true;tocar();
+ ['loadeddata','canplay'].forEach(e=>v.addEventListener(e,()=>{if(v.paused&&!manual)tocar()}));
+ [400,1200,2500].forEach(t=>setTimeout(()=>{if(v.paused&&!manual)tocar()},t));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&v.paused&&!manual)tocar()});
  const ativar=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#tvctl'))return;
-  if(v.muted&&!userMuted){v.muted=false;ui()}
+  if(v.paused&&!manual)tocar();if(v.muted&&!userMuted){v.muted=false;ui()}
   if(!v.muted)['pointerup','click','keydown','touchend'].forEach(n=>removeEventListener(n,ativar))};
  ['pointerup','click','keydown','touchend'].forEach(n=>addEventListener(n,ativar,{passive:true}));
  sn.onclick=()=>{v.muted=!v.muted;userMuted=v.muted;ui()};
@@ -660,15 +677,22 @@ async function playUrl(v,url,st){
 async function loadM3U(url){url=seguro(url);const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();const out=[];let nome='';
  t.split(/\r?\n/).forEach(l=>{l=l.trim();if(l.startsWith('#EXTINF'))nome=(l.split(',').slice(1).join(',')||'').trim();
   else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:seguro(l,url)});nome=''}});return out}
+function convite(vd,wrap){
+ const b=document.createElement('button');b.type='button';b.className='invite';b.setAttribute('aria-label','Assistir a amostra');
+ b.innerHTML='<img class="lg" src="logo.png" alt=""><span class="ring"><i>▶</i></span><b>Toque para ver a amostra</b><small>veja como fica na tela</small>';
+ wrap.appendChild(b);
+ b.onclick=()=>{const r=vd.play();if(r&&r.catch)r.catch(()=>{});b.classList.add('off')};
+ vd.addEventListener('play',()=>b.classList.add('off'));
+ vd.addEventListener('ended',()=>b.classList.remove('off'))}
 function renderVideo(p,box){
  const vert=p.formato==='9x16';
  if(!p.src){box.insertAdjacentHTML('beforeend',`<div class="soon${vert?' v':''}">Em breve<br>Peça uma demonstração pelo WhatsApp</div>`);return}
  if(vert){box.insertAdjacentHTML('beforeend',`<div class="vbox"><video controls playsinline preload="none" ${p.poster?`poster="${p.poster}"`:''} src="${seguro(p.src)}"></video></div><div class="st"></div>`);
-  const vv=$('video',box);vv.addEventListener('error',()=>{$('.st',box).textContent='Este vídeo não abriu: '+(vv.currentSrc||vv.src).slice(0,90)});return}
+  const vv=$('video',box);convite(vv,$('.vbox',box));vv.addEventListener('error',()=>{$('.st',box).textContent='Este vídeo não abriu: '+(vv.currentSrc||vv.src).slice(0,90)});return}
  const k=kind(p);
  if(k==='iframe'){box.insertAdjacentHTML('beforeend',`<iframe src="${ytEmbed(p.src)}" allowfullscreen loading="lazy"></iframe>`);return}
  box.insertAdjacentHTML('beforeend',(k==='m3u'?'<div class="m3u"><input type="search" placeholder="Buscar canal"><select></select></div>':'')+`<video controls playsinline preload="metadata" ${p.loop&&k!=='m3u'?'autoplay muted loop':''}></video><div class="st"></div>`);
- const v=$('video',box),st=t=>$('.st',box).textContent=t;
+ const v=$('video',box),st=t=>$('.st',box).textContent=t;{const w=document.createElement('div');w.className='vw';v.parentNode.insertBefore(w,v);w.appendChild(v);if(!(p.loop&&k!=='m3u'))convite(v,w)}
  if(k!=='m3u'){playUrl(v,p.src,st);return}
  const sel=$('select',box),q=$('input',box);let all=[];
  const fill=()=>{const f=q.value.toLowerCase();sel.innerHTML='';all.filter(c=>c.n.toLowerCase().includes(f)).slice(0,500).forEach(c=>{const o=document.createElement('option');o.value=c.u;o.textContent=c.n;sel.appendChild(o)})};
@@ -687,7 +711,7 @@ function renderVideo(p,box){
   v.classList.add('show');v.appendChild(vert[0].d);
   const side=document.createElement('div');side.className='side';
   side.innerHTML=`<div class="pitch"><span class="eyebrow">Por que vídeo vende</span><h3>Quem vê e ouve a sua marca lembra dela na hora de comprar.</h3><div class="pts"><div><b>👁️ Atenção em segundos</b><span>Imagem em movimento prende o olhar mais rápido do que um cartaz parado.</span></div><div><b>🔊 Memória sonora</b><span>Voz, trilha e vinheta fixam a sua marca na mente do cliente.</span></div><div><b>⚡ Impulso de compra</b><span>Oferta em vídeo, na hora certa, ajuda o cliente a decidir ali, no ponto de venda.</span></div><div><b>📱 Formato do celular</b><span>O vídeo vertical é o jeito que as pessoas já assistem todo dia nas redes.</span></div></div><a class="btn amb" data-zap="Olá! Vi o vídeo vertical no site e quero um para a minha marca.">Quero um vídeo assim</a></div>`;
-  const duo=document.createElement('div');duo.className='duo';resto.concat(vert.slice(1)).forEach(x=>duo.appendChild(x.d));side.appendChild(duo);v.appendChild(side);
+  const duo=document.createElement('div');duo.className='duo';resto.concat(vert.slice(1)).forEach(x=>duo.appendChild(x.d));v.appendChild(side);v.appendChild(duo);
  }else ps.forEach(x=>v.appendChild(x.d));
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
   d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
