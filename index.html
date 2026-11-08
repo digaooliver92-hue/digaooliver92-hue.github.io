@@ -221,6 +221,19 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 .player .vbox{position:relative;height:var(--S,480px);width:calc(var(--S,480px)*9/16);aspect-ratio:auto;border-radius:14px;overflow:hidden;background:#000;margin-inline:auto}
 .player .vbox video{width:100%;height:100%;aspect-ratio:auto;object-fit:contain;border-radius:0;display:block}
 .soon.v{aspect-ratio:9/16}
+.aviso{display:flex;align-items:center;gap:10px;margin:2px 0 8px;padding:9px 12px;border-radius:14px;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(100deg,rgba(224,64,251,.25),rgba(24,200,255,.2));border:1px solid var(--line);animation:avp 2s ease-in-out infinite}
+.aviso i{font-style:normal;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--grad);flex:none}
+.aviso.off{display:none}
+@keyframes avp{50%{box-shadow:0 0 0 6px rgba(224,64,251,.14)}}
+.rwave{display:block;width:100%;height:46px;margin:6px 0 2px;border-radius:10px}
+.rpitch{grid-column:1/-1;position:relative;overflow:hidden;border-radius:var(--r);padding:24px;border:1px solid var(--line);background:linear-gradient(160deg,rgba(224,64,251,.18),rgba(24,200,255,.06))}
+.rpitch h3{font-size:clamp(20px,3.4vw,28px);margin:6px 0 10px}
+.rpitch p{color:var(--mut);margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.chips span{padding:7px 12px;border-radius:99px;font-size:13px;background:rgba(5,3,13,.55);border:1px solid var(--line)}
+.rpitch .rwave{height:56px;margin:0 0 16px}
+@media(prefers-reduced-motion:reduce){.aviso{animation:none}}
+
 .invite{position:absolute;inset:0;z-index:3;border:0;cursor:pointer;display:grid;place-content:center;justify-items:center;gap:10px;color:#fff;font:inherit;background:radial-gradient(circle at 50% 45%,rgba(124,77,255,.35),rgba(5,3,13,.82) 70%);padding:10px;text-align:center}
 .invite .lg{width:40px;filter:drop-shadow(0 4px 10px #000a);animation:invf 2.4s ease-in-out infinite}
 .invite .ring{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:var(--grad);animation:invp 1.8s ease-out infinite}
@@ -629,13 +642,13 @@ function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.
 /* ---------- TV da página inicial: MP4 em loop, começa sozinho ---------- */
 (function(){const L=CONFIG.TV_LOOP||[];if(!L.length)return;
  const v=$('#tvloop'),sn=$('#snd'),pp=$('#pp'),ctl=$('#tvctl'),hint=$('#sndhint');
- let i=0,manual=false,userMuted=false,erros=0;
+ let i=0,manual=false,userMuted=false,erros=0,ativouEm=0,vis=true,outro=null;
  v.hidden=false;$$('.slide').forEach(s=>s.style.display='none');ctl.classList.add('on');
  if(CONFIG.TV_POSTER)v.poster=CONFIG.TV_POSTER;
  if(L.length===1)v.loop=true;
  const ui=()=>{pp.textContent=v.paused?'▶':'⏸';sn.textContent=v.muted?'🔇':'🔊';hint.textContent=v.paused&&!manual?'▶ Toque para iniciar o vídeo':'🔊 Toque para ligar o som';hint.classList.toggle('on',(v.muted&&!v.paused&&!userMuted)||(v.paused&&!manual))};
  ['play','pause','volumechange'].forEach(e=>v.addEventListener(e,ui));
- const tocar=()=>{const r=v.play();if(r&&r.catch)r.catch(()=>{})};
+ const tocar=()=>{if(!vis&&CONFIG.TV_PAUSAR_FORA!==false)return;const r=v.play();if(r&&r.catch)r.catch(()=>{})};
  const carrega=()=>{v.src=seguro(L[i])};
  v.addEventListener('ended',()=>{i=(i+1)%L.length;carrega();tocar()});
  v.addEventListener('error',()=>{erros++;if(erros>=L.length){v.hidden=true;ctl.classList.remove('on');hint.classList.remove('on');$$('.slide').forEach(s=>s.style.display='')}else{i=(i+1)%L.length;carrega();tocar()}});
@@ -644,15 +657,21 @@ function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.
  [400,1200,2500].forEach(t=>setTimeout(()=>{if(v.paused&&!manual)tocar()},t));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&v.paused&&!manual)tocar()});
  const ativar=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#tvctl'))return;
-  if(v.paused&&!manual)tocar();if(v.muted&&!userMuted){v.muted=false;ui()}
+  if(v.paused&&!manual)tocar();if(v.muted&&!userMuted){v.muted=false;ativouEm=performance.now();ui()}
   if(!v.muted)['pointerup','click','keydown','touchend'].forEach(n=>removeEventListener(n,ativar))};
  ['pointerup','click','keydown','touchend'].forEach(n=>addEventListener(n,ativar,{passive:true}));
  sn.onclick=()=>{v.muted=!v.muted;userMuted=v.muted;ui()};
  pp.onclick=()=>{if(v.paused){manual=false;tocar()}else{manual=true;v.pause()}};
+ v.closest('.screen').addEventListener('click',e=>{if(e.target.closest('#tvctl'))return;
+  if(performance.now()-ativouEm<700)return;
+  if(v.paused){manual=false;tocar()}else{manual=true;v.pause()}});
+ v.style.cursor='pointer';
  /* pausa quando sai da tela e quando outro áudio/vídeo toca (evita som em cima de som) */
- let jaViu=false;
- if(CONFIG.TV_PAUSAR_FORA!==false&&window.IntersectionObserver)new IntersectionObserver(es=>{if(es[0].isIntersecting){jaViu=true;if(!manual)tocar()}else if(jaViu)v.pause()},{threshold:.25}).observe(v.closest('.screen'));
- document.addEventListener('play',e=>{if(e.target!==v&&!v.paused){manual=true;v.pause()}},true);
+ let jaViu=false,inView=null;
+ addEventListener('scroll',()=>{if(scrollY>40&&inView===false&&!v.paused&&CONFIG.TV_PAUSAR_FORA!==false){vis=false;v.pause()}},{passive:true});
+ if(CONFIG.TV_PAUSAR_FORA!==false&&window.IntersectionObserver)new IntersectionObserver(es=>{const ve=es[0].isIntersecting;inView=ve;if(ve)jaViu=true;if(!(ve||jaViu||scrollY>40))return;vis=ve;if(ve){if(!manual&&!outro)tocar()}else v.pause()},{threshold:.25}).observe(v.closest('.screen'));
+ document.addEventListener('playing',e=>{const t=e.target;if(t!==v&&!t.muted&&!v.paused){outro=t;v.pause()}},true);
+ ['pause','ended'].forEach(n=>document.addEventListener(n,e=>{if(outro&&e.target===outro){outro=null;if(!manual&&vis)tocar()}},true));
  ui()})();
 
 /* ---------- players de vídeo (MP4, YouTube, HLS, lista M3U) e áudio ---------- */
@@ -684,6 +703,11 @@ function convite(vd,wrap){
  b.onclick=()=>{const r=vd.play();if(r&&r.catch)r.catch(()=>{});b.classList.add('off')};
  vd.addEventListener('play',()=>b.classList.add('off'));
  vd.addEventListener('ended',()=>b.classList.remove('off'))}
+function onda(c,au){const x=c.getContext('2d'),n=36,vv=Array.from({length:n},()=>Math.random()),cols=['#e040fb','#7c4dff','#18c8ff','#ffb81c'];let W=0,H=0;
+ const size=()=>{const r=c.getBoundingClientRect();W=c.width=Math.max(10,r.width)*devicePixelRatio;H=c.height=r.height*devicePixelRatio};size();addEventListener('resize',size);
+ (function d(){if(!W||W<30)size();if(W>30){x.clearRect(0,0,W,H);const bw=W/n,viva=!au||!au.paused;
+  for(let i=0;i<n;i++){vv[i]+=(Math.random()-.5)*(viva?.4:.12);vv[i]=Math.max(.08,Math.min(1,vv[i]));const h=vv[i]*H*(viva?1:.55);x.fillStyle=cols[Math.floor(i/n*cols.length)];x.fillRect(i*bw+bw*.15,H-h,bw*.7,h)}}
+  setTimeout(()=>requestAnimationFrame(d),80)})()}
 function renderVideo(p,box){
  const vert=p.formato==='9x16';
  if(!p.src){box.insertAdjacentHTML('beforeend',`<div class="soon${vert?' v':''}">Em breve<br>Peça uma demonstração pelo WhatsApp</div>`);return}
@@ -714,7 +738,11 @@ function renderVideo(p,box){
   const duo=document.createElement('div');duo.className='duo';resto.concat(vert.slice(1)).forEach(x=>duo.appendChild(x.d));v.appendChild(side);v.appendChild(duo);
  }else ps.forEach(x=>v.appendChild(x.d));
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
-  d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio>`:`<div class="soon a">Em breve</div>`);a.appendChild(d)});
+  d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<div class="aviso"><i>▶</i><span>Toque no play e ouça como a sua rádio pode soar</span></div><audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio><canvas class="rwave"></canvas>`:`<div class="soon a">Em breve</div>`);a.appendChild(d);
+  const au=$('audio',d);if(au){const av=$('.aviso',d);au.addEventListener('play',()=>av.classList.add('off'));au.addEventListener('ended',()=>av.classList.remove('off'));onda($('.rwave',d),au)}});
+ {const r=document.createElement('div');r.className='rpitch';
+  r.innerHTML=`<span class="eyebrow">Sua rádio, do zero</span><h3>Uma rádio com a cara do seu comércio, da sua igreja ou do seu sonho.</h3><p>A gente cria tudo para você: locução, vinhetas, músicas e a identidade da sua marca. Quem escuta lembra de você e volta.</p><canvas class="rwave"></canvas><div class="chips"><span>🛍️ Comércio</span><span>⛪ Igreja</span><span>🍔 Restaurante</span><span>💪 Academia</span><span>🏥 Clínica</span><span>🎙️ Rádio própria</span></div><a class="btn amb" data-zap="Olá! Vi as rádios no site e quero criar a minha rádio do zero.">Quero a minha rádio</a>`;
+  a.appendChild(r);onda($('.rwave',r),null)}
  $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}const u=(x.currentSrc||x.src);t.textContent='Testando a rádio...';sondar(u).then(r=>{t.textContent=(r==='ok'?'O servidor respondeu, mas o áudio não abriu (nome da estação ou do ponto de montagem errado, ou formato).':r==='lento'?'O servidor não respondeu a tempo.':'Não conectou por https (certificado inválido ou porta fechada).')+' '+u.slice(0,80)})}));
  $$('#pl-a audio').forEach(x=>x.addEventListener('play',()=>$$('#pl-a audio').forEach(y=>{if(y!==x)y.pause()})));
  $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#pl-v').classList.toggle('on',b.dataset.t==='v');$('#pl-a').classList.toggle('on',b.dataset.t==='a')});
