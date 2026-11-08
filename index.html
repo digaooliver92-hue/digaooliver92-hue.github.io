@@ -109,7 +109,8 @@ h2{font-size:clamp(28px,6vw,46px);margin-bottom:12px}
 .radio{margin-top:12px;border-radius:16px;border:1px solid var(--line);background:var(--card);padding:12px 14px;display:flex;align-items:center;gap:14px;text-align:left}
 .radio p{font-size:12px;color:var(--mut);line-height:1.25;min-width:96px}
 .radio p b{display:block;color:var(--ink);font-size:13px}
-#eq{flex:1;height:44px;width:100%}
+#eq{flex:1;height:44px;width:100%;min-width:0;display:block}
+.radio{overflow:hidden}
 .note{font-size:12px;color:var(--mut);margin-top:10px}
 
 /* ---------- reveal ---------- */
@@ -216,6 +217,8 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 .show .duo{grid-column:1/-1}
 .show .side{grid-template-rows:1fr}
 .pitch{display:flex;flex-direction:column;justify-content:center}
+.pitch .cap2{position:relative;color:var(--mut);margin:-4px 0 16px;font-size:15px}
+.duocap{grid-column:1/-1;text-align:center;color:var(--mut);font-size:14px;margin-top:2px}
 .player.vert{width:max-content;max-width:100%;margin-inline:auto}
 @media(min-width:900px){.player.vert{margin:0}}
 .player .vbox{position:relative;height:var(--S,480px);width:calc(var(--S,480px)*9/16);aspect-ratio:auto;border-radius:14px;overflow:hidden;background:#000;margin-inline:auto}
@@ -242,6 +245,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 .invite small{color:var(--mut);font-size:12px;margin-top:-6px}
 @media(max-width:600px){.invite small{display:none}.invite{gap:6px}}
 .invite.off{display:none}
+.invite.wait .ring{animation:none;opacity:.7}
 @keyframes invp{0%{box-shadow:0 0 0 0 rgba(224,64,251,.65)}100%{box-shadow:0 0 0 34px rgba(224,64,251,0)}}
 @keyframes invf{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @media(prefers-reduced-motion:reduce){.invite .ring,.invite .lg{animation:none}}
@@ -354,10 +358,8 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
         </div>
       </div>
       <div class="radio">
-        <p><b>Rádio indoor</b>tocando agora</p>
         <canvas id="eq" height="44"></canvas>
       </div>
-      <p class="note">Exemplo ilustrativo de como a programação aparece na tela da loja.</p>
     </div>
   </div>
 </section>
@@ -525,7 +527,7 @@ const CONFIG = {
      O tipo é detectado sozinho. */
   VIDEOS: [
     {titulo:"Vitrine em vídeo vertical", tag:"9:16", formato:"9x16", poster:"videos/vitrine.jpg", src:"videos/vitrine.mp4"},
-    {titulo:"TV Online", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/tvonline/lista.m3u"},
+    {titulo:"TV Online", tag:"Vídeos corporativos · exemplo", src:"https://tvdigao92.duckdns.org:8443/live/tvonline/lista.m3u"},
     {titulo:"TV Mídia Indoor", tag:"M3U", src:"https://tvdigao92.duckdns.org:8443/live/midia_indoor/lista.m3u"}
   ],
 
@@ -657,10 +659,21 @@ function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.
  ['loadeddata','canplay'].forEach(e=>v.addEventListener(e,()=>{if(v.paused&&!manual)tocar()}));
  [400,1200,2500].forEach(t=>setTimeout(()=>{if(v.paused&&!manual)tocar()},t));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&v.paused&&!manual)tocar()});
+ const tira=()=>['pointerup','click','keydown'].forEach(n=>removeEventListener(n,ativar));
  const ativar=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#tvctl'))return;
-  if(v.paused&&!manual)tocar();if(v.muted&&!userMuted){v.muted=false;ativouEm=performance.now();ui()}
-  if(!v.muted)['pointerup','click','keydown','touchend'].forEach(n=>removeEventListener(n,ativar))};
- ['pointerup','click','keydown','touchend'].forEach(n=>addEventListener(n,ativar,{passive:true}));
+  /* so conta toque/clique/tecla de verdade (rolar a tela NAO conta: desmutar sem gesto faz o Chrome pausar o video) */
+  if(navigator.userActivation&&!navigator.userActivation.isActive)return;
+  if(v.muted&&!userMuted){
+   ativouEm=performance.now();v.muted=false;
+   if(manual){ui();tira();return}
+   Promise.resolve(v.play()).then(()=>{tira();ui()}).catch(()=>{v.muted=true;tocar();ui()});
+  }else if(v.paused&&!manual)tocar();
+  ui()};
+ ['pointerup','click','keydown'].forEach(n=>addEventListener(n,ativar,{passive:true}));
+ /* rede de seguranca: se o navegador pausar o video depois de desmutar sem gesto, volta mudo e continua */
+ v.addEventListener('pause',()=>{if(!manual&&!outro&&vis&&performance.now()-ativouEm<1500){v.muted=true;tocar();ui()}});
+ let tent=0;const vig=setInterval(()=>{if(++tent>10){clearInterval(vig);return}
+  if(v.paused&&!manual&&!outro&&vis&&!document.hidden){if(!v.muted&&!userMuted&&!(navigator.userActivation&&navigator.userActivation.isActive))v.muted=true;tocar();ui()}},2000);
  sn.onclick=()=>{v.muted=!v.muted;userMuted=v.muted;ui()};
  pp.onclick=()=>{if(v.paused){manual=false;tocar()}else{manual=true;v.pause()}};
  v.closest('.screen').addEventListener('click',e=>{if(e.target.closest('#tvctl'))return;
@@ -684,16 +697,25 @@ function kind(p){const f=(p.src||'');const s=f.toLowerCase().split('?')[0];
 function ytEmbed(u){const m=u.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/);return m?'https://www.youtube.com/embed/'+m[1]:u}
 async function playUrl(v,url,st){
  url=seguro(url);
- if(/^http:\/\//i.test(url)&&location.protocol==='https:'){st('Link http bloqueado pelo navegador. Esse endereço precisa de https: '+url.slice(0,80));return}
+ if(/^http:\/\//i.test(url)&&location.protocol==='https:'){st('Este canal precisa de endereço https.');return}
  const hls=/\.m3u8(\?|$)/i.test(url);
- if(v._h){v._h.destroy();v._h=null}
- if(hls&&!v.canPlayType('application/vnd.apple.mpegurl')){
-  try{await lib('hls')}catch(e){st('Não foi possível carregar o leitor de canais. Verifique a internet.');return}
-  if(window.Hls&&Hls.isSupported()){const h=new Hls();v._h=h;h.loadSource(url);h.attachMedia(v);
-   h.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)st('Este canal não abriu. Ele pode estar fora do ar ou bloquear acesso por sites.')});
-   v.play().catch(()=>{});return}}
- v.onerror=()=>st('Este vídeo não abriu: '+url.slice(0,90));
- v.src=url;v.play().catch(()=>{})}
+ clearTimeout(v._t);v._try=0;v._id=(v._id||0)+1;const id=v._id;
+ const quer=()=>{if(v._quer){const r=v.play();if(r&&r.catch)r.catch(()=>{})}};
+ const falha=()=>{if(id!==v._id)return;if(v._try<4){v._try++;st('Conectando ao canal...');v._t=setTimeout(iniciar,1000*v._try)}else st('Este canal não abriu agora. Tente de novo em instantes.')};
+ async function iniciar(){
+  if(id!==v._id)return;
+  if(v._h){v._h.destroy();v._h=null}
+  if(hls){
+   try{await lib('hls')}catch(e){falha();return}
+   if(window.Hls&&Hls.isSupported()){
+    const h=new Hls({manifestLoadingMaxRetry:2,levelLoadingMaxRetry:2,fragLoadingMaxRetry:3});v._h=h;
+    h.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal)return;if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&v._try<3){v._try++;h.recoverMediaError()}else falha()});
+    h.on(Hls.Events.MANIFEST_PARSED,()=>{st('');quer()});
+    h.loadSource(url);h.attachMedia(v);return}}
+  v.onerror=()=>falha();
+  v.onloadedmetadata=()=>{st('');quer()};
+  v.src=url;quer()}
+ iniciar()}
 async function loadM3U(url){url=seguro(url);const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();const out=[];let nome='';
  t.split(/\r?\n/).forEach(l=>{l=l.trim();if(l.startsWith('#EXTINF'))nome=(l.split(',').slice(1).join(',')||'').trim();
   else if(l&&!l.startsWith('#')){out.push({n:nome||l.slice(0,40),u:seguro(l,url)});nome=''}});return out}
@@ -701,8 +723,8 @@ function convite(vd,wrap){
  const b=document.createElement('button');b.type='button';b.className='invite';b.setAttribute('aria-label','Assistir a amostra');
  b.innerHTML='<img class="lg" src="logo.png" alt=""><span class="ring"><i>▶</i></span><b>Toque para ver a amostra</b><small>veja como fica na tela</small>';
  wrap.appendChild(b);
- b.onclick=()=>{const r=vd.play();if(r&&r.catch)r.catch(()=>{});b.classList.add('off')};
- vd.addEventListener('play',()=>b.classList.add('off'));
+ b.onclick=()=>{vd._quer=true;const r=vd.play();if(r&&r.catch)r.catch(()=>{});b.classList.add('wait');const t=$('b',b);if(t)t.textContent='Carregando...';setTimeout(()=>b.classList.add('off'),9000)};
+ vd.addEventListener('playing',()=>b.classList.add('off'));
  vd.addEventListener('ended',()=>b.classList.remove('off'))}
 function onda(c,au){const x=c.getContext('2d'),n=36,vv=Array.from({length:n},()=>Math.random()),cols=['#e040fb','#7c4dff','#18c8ff','#ffb81c'];let W=0,H=0;
  const size=()=>{const r=c.getBoundingClientRect();W=c.width=Math.max(10,r.width)*devicePixelRatio;H=c.height=r.height*devicePixelRatio};size();addEventListener('resize',size);
@@ -713,7 +735,7 @@ function renderVideo(p,box){
  const vert=p.formato==='9x16';
  if(!p.src){box.insertAdjacentHTML('beforeend',`<div class="soon${vert?' v':''}">Em breve<br>Peça uma demonstração pelo WhatsApp</div>`);return}
  if(vert){box.insertAdjacentHTML('beforeend',`<div class="vbox"><video controls playsinline preload="none" ${p.poster?`poster="${p.poster}"`:''} src="${seguro(p.src)}"></video></div><div class="st"></div>`);
-  const vv=$('video',box);convite(vv,$('.vbox',box));vv.addEventListener('error',()=>{$('.st',box).textContent='Este vídeo não abriu: '+(vv.currentSrc||vv.src).slice(0,90)});return}
+  const vv=$('video',box);convite(vv,$('.vbox',box));vv.addEventListener('error',()=>{$('.st',box).textContent='Este vídeo não abriu agora. Tente de novo em instantes.'});return}
  const k=kind(p);
  if(k==='iframe'){box.insertAdjacentHTML('beforeend',`<iframe src="${ytEmbed(p.src)}" allowfullscreen loading="lazy"></iframe>`);return}
  box.insertAdjacentHTML('beforeend',(k==='m3u'?'<div class="m3u"><input type="search" placeholder="Buscar canal"><select></select></div>':'')+`<video controls playsinline preload="metadata" ${p.loop&&k!=='m3u'?'autoplay muted loop':''}></video><div class="st"></div>`);
@@ -727,7 +749,7 @@ function renderVideo(p,box){
  .catch(async e=>{const u=seguro(p.src);let m;
   if(/^HTTP /.test(e.message||''))m='o servidor respondeu '+e.message+' (caminho da lista errado?)';
   else{const r=await sondar(u);m=r==='ok'?'o servidor respondeu, mas não libera acesso ao site (falta CORS: Access-Control-Allow-Origin)':r==='lento'?'o servidor não respondeu a tempo':'não conectou por https (certificado inválido ou porta fechada)'}
-  st('Lista não abriu: '+m+'. '+u.slice(0,80))})}
+  st('A lista de canais não abriu agora. Tente de novo em instantes.');console.warn('Lista: '+m)})}
 (function(){
  const v=$('#pl-v'),a=$('#pl-a');
  const ps=CONFIG.VIDEOS.map(p=>{const d=document.createElement('div');d.className='player'+(p.formato==='9x16'?' vert':'');d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`;renderVideo(p,d);return {p,d}});
@@ -735,8 +757,9 @@ function renderVideo(p,box){
  if(vert.length){
   v.classList.add('show');v.appendChild(vert[0].d);
   const side=document.createElement('div');side.className='side';
-  side.innerHTML=`<div class="pitch"><span class="eyebrow">Por que vídeo vende</span><h3>Quem vê e ouve a sua marca lembra dela na hora de comprar.</h3><div class="pts"><div><b>👁️ Atenção em segundos</b><span>Imagem em movimento prende o olhar mais rápido do que um cartaz parado.</span></div><div><b>🔊 Memória sonora</b><span>Voz, trilha e vinheta fixam a sua marca na mente do cliente.</span></div><div><b>⚡ Impulso de compra</b><span>Oferta em vídeo, na hora certa, ajuda o cliente a decidir ali, no ponto de venda.</span></div><div><b>📱 Formato do celular</b><span>O vídeo vertical é o jeito que as pessoas já assistem todo dia nas redes.</span></div></div><a class="btn amb" data-zap="Olá! Vi o vídeo vertical no site e quero um para a minha marca.">Quero um vídeo assim</a></div>`;
-  const duo=document.createElement('div');duo.className='duo';resto.concat(vert.slice(1)).forEach(x=>duo.appendChild(x.d));v.appendChild(side);v.appendChild(duo);
+  side.innerHTML=`<div class="pitch"><span class="eyebrow">Por que vídeo vende</span><h3>Quem vê e ouve a sua marca lembra dela na hora de comprar.</h3><p class="cap2">Você também pode deixar a sua televisão na vertical. É uma estratégia de alta retenção: as pessoas já vivem com o celular em pé, rolando o feed e assistindo vídeos. Montamos uma configuração pensada para prender a atenção de quem já tem esse hábito, usando neuromarketing.</p><div class="pts"><div><b>👁️ Atenção em segundos</b><span>Imagem em movimento prende o olhar mais rápido do que um cartaz parado.</span></div><div><b>🔊 Memória sonora</b><span>Voz, trilha e vinheta fixam a sua marca na mente do cliente.</span></div><div><b>⚡ Impulso de compra</b><span>Oferta em vídeo, na hora certa, ajuda o cliente a decidir ali, no ponto de venda.</span></div><div><b>📱 Formato do celular</b><span>O vídeo vertical é o jeito que as pessoas já assistem todo dia nas redes.</span></div></div><a class="btn amb" data-zap="Olá! Vi o vídeo vertical no site e quero um para a minha marca.">Quero um vídeo assim</a></div>`;
+  const duo=document.createElement('div');duo.className='duo';resto.concat(vert.slice(1)).forEach(x=>duo.appendChild(x.d));{const c=document.createElement('p');c.className='duocap';c.textContent='Na TV no formato normal (16:9), montamos a programação de acordo com a marca de cada cliente, seja qual for o negócio.';duo.appendChild(c)}
+  v.appendChild(side);v.appendChild(duo);
  }else ps.forEach(x=>v.appendChild(x.d));
  CONFIG.AUDIOS.forEach(p=>{const d=document.createElement('div');d.className='player';
   d.innerHTML=`<h3>${p.titulo}<em>${p.tag||''}</em></h3>`+(p.src?`<div class="aviso"><i>▶</i><span>Toque no play e ouça como a sua rádio pode soar</span></div><audio controls preload="none" ${p.loop?'loop':''} src="${seguro(p.src)}"></audio><canvas class="rwave"></canvas>`:`<div class="soon a">Em breve</div>`);a.appendChild(d);
@@ -744,7 +767,7 @@ function renderVideo(p,box){
  {const r=document.createElement('div');r.className='rpitch';
   r.innerHTML=`<span class="eyebrow">Sua rádio, do zero</span><h3>Uma rádio com a cara do seu comércio, da sua igreja ou do seu sonho.</h3><p>A gente cria tudo para você: locução, vinhetas, músicas e a identidade da sua marca. Quem escuta lembra de você e volta.</p><canvas class="rwave"></canvas><div class="chips"><span>🛍️ Comércio</span><span>⛪ Igreja</span><span>🍔 Restaurante</span><span>💪 Academia</span><span>🏥 Clínica</span><span>🎙️ Rádio própria</span></div><a class="btn amb" data-zap="Olá! Vi as rádios no site e quero criar a minha rádio do zero.">Quero a minha rádio</a>`;
   a.appendChild(r);onda($('.rwave',r),null)}
- $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}const u=(x.currentSrc||x.src);t.textContent='Testando a rádio...';sondar(u).then(r=>{t.textContent=(r==='ok'?'O servidor respondeu, mas o áudio não abriu (nome da estação ou do ponto de montagem errado, ou formato).':r==='lento'?'O servidor não respondeu a tempo.':'Não conectou por https (certificado inválido ou porta fechada).')+' '+u.slice(0,80)})}));
+ $$('#pl-a audio').forEach(x=>x.addEventListener('error',()=>{let t=x.parentNode.querySelector('.st');if(!t){t=document.createElement('div');t.className='st';x.parentNode.appendChild(t)}const u=(x.currentSrc||x.src);t.textContent='Testando a rádio...';sondar(u).then(r=>{t.textContent='Esta rádio não abriu agora. Tente de novo em instantes.';console.warn('Radio: '+r)})}));
  $$('#pl-a audio').forEach(x=>x.addEventListener('play',()=>$$('#pl-a audio').forEach(y=>{if(y!==x)y.pause()})));
  $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#pl-v').classList.toggle('on',b.dataset.t==='v');$('#pl-a').classList.toggle('on',b.dataset.t==='a')});
 })();
