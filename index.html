@@ -646,9 +646,10 @@ function lib(k){return libC[k]||(libC[k]=new Promise((ok,no)=>{const s=document.
  v.hidden=false;$$('.slide').forEach(s=>s.style.display='none');ctl.classList.add('on');
  if(CONFIG.TV_POSTER)v.poster=CONFIG.TV_POSTER;
  if(L.length===1)v.loop=true;
- const ui=()=>{pp.textContent=v.paused?'▶':'⏸';sn.textContent=v.muted?'🔇':'🔊';hint.textContent=v.paused&&!manual?'▶ Toque para iniciar o vídeo':'🔊 Toque para ligar o som';hint.classList.toggle('on',(v.muted&&!v.paused&&!userMuted)||(v.paused&&!manual))};
+ const ui=()=>{pp.textContent=v.paused?'▶':'⏸';sn.textContent=v.muted?'🔇':'🔊';hint.textContent=(v.paused&&!manual?'▶ Toque para iniciar o vídeo':'🔊 Toque para ligar o som')+(diag?' ['+perr+' rs'+v.readyState+' ns'+v.networkState+' sd'+(navigator.connection&&navigator.connection.saveData)+']':'');hint.classList.toggle('on',(v.muted&&!v.paused&&!userMuted)||(v.paused&&!manual))};
  ['play','pause','volumechange'].forEach(e=>v.addEventListener(e,ui));
- const tocar=()=>{if(!vis&&CONFIG.TV_PAUSAR_FORA!==false)return;const r=v.play();if(r&&r.catch)r.catch(()=>{})};
+ const diag=/[?&]diag=1/.test(location.search);let perr='';
+ const tocar=()=>{if(!vis&&CONFIG.TV_PAUSAR_FORA!==false)return;const r=v.play();if(r&&r.catch)r.catch(e=>{perr=(e&&e.name)||'erro';ui()})};
  const carrega=()=>{v.src=seguro(L[i])};
  v.addEventListener('ended',()=>{i=(i+1)%L.length;carrega();tocar()});
  v.addEventListener('error',()=>{erros++;if(erros>=L.length){v.hidden=true;ctl.classList.remove('on');hint.classList.remove('on');$$('.slide').forEach(s=>s.style.display='')}else{i=(i+1)%L.length;carrega();tocar()}});
