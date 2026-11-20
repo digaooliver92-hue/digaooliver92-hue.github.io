@@ -245,6 +245,7 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
 .invite small{color:var(--mut);font-size:12px;margin-top:-6px}
 @media(max-width:600px){.invite small{display:none}.invite{gap:6px}}
 .invite.off{display:none}
+.dados{display:grid;gap:8px;margin:12px 0 4px}.dados input{padding:12px 14px}
 .invite.wait .ring{animation:none;opacity:.7}
 @keyframes invp{0%{box-shadow:0 0 0 0 rgba(224,64,251,.65)}100%{box-shadow:0 0 0 34px rgba(224,64,251,0)}}
 @keyframes invf{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
@@ -444,6 +445,12 @@ footer img{height:44px;width:auto;margin:0 auto 12px}
     <small style="color:var(--cya);font-weight:700;letter-spacing:.15em">FECHAR PEDIDO</small>
     <h3 id="m-nome"></h3>
     <div class="tot grad-t" id="m-val"></div>
+    <div class="dados" id="m-dados" hidden>
+      <input id="m-nomec" type="text" placeholder="Seu nome" autocomplete="name">
+      <input id="m-email" type="email" placeholder="Seu e-mail" autocomplete="email">
+      <input id="m-fone" type="tel" placeholder="Seu WhatsApp com DDD" autocomplete="tel">
+      <small id="m-erro" style="color:#ff8a9b" hidden></small>
+    </div>
     <div class="opts">
       <button class="btn pri" id="m-pix">⚡ Pagar com Pix</button>
       <button class="btn amb" id="m-card">💳 Pagar no cartão</button>
@@ -518,6 +525,7 @@ const CONFIG = {
     PIX_CHAVE: "",      // como está cadastrada no banco. Telefone: +5511999998888 | CPF/CNPJ: só números | e-mail | chave aleatória
     PIX_NOME: "",       // nome do recebedor (igual ao do banco, sem acento, até 25 letras)
     PIX_CIDADE: "",     // sua cidade (até 15 letras)
+    API: "https://tvdigao92.duckdns.org:8443/api",   // Pix automatico (Banco Inter) + e-mails; vazio = Pix estatico antigo
     CARTAO: {           // link de pagamento de cada produto (Mercado Pago, InfinitePay, etc.)
       tv:"", radio:"", combo:"", encartes:"", jingle:"", vinhetas:"", video3d:""
     }
@@ -572,6 +580,25 @@ const CONFIG = {
      desc:"Produção audiovisual avançada de alto padrão e vídeos focados em alta retenção para turbinar o engajamento nas redes sociais e impressionar no ponto de venda."}
   ]
 };
+
+/* OFERTA_V13 — nomes, preços e links de cartão (InfinitePay). O script de atualização reescreve este bloco; para mudar um preço ou link, edite aqui. */
+(function(){
+  const L="https://link.infinitepay.io/manuplay/VC1DLTEtSQ-";
+  const O={
+    tv:["TV Personalizada & Mídia Indoor",370,L+"xJSq40h34I-370,00"],
+    radio:["Rádio Indoor & Web Rádio Profissional",370,L+"ZEYCMsMC3I-370,00"],
+    combo:["Combo: TV + Rádio (Pacote Completo)",725,L+"TG1GNJsNRA-725,00"],
+    encartes:["Encarte Personalizado e Ofertas Digitalizadas",150,L+"QU1SAMmLbJ-150,00"],
+    jingle:["Jingle Comercial Personalizado",150,L+"yCyFOWysJG-150,00"],
+    vinhetas:["Spot Comercial Profissional",110,L+"FxAlRGS4YD-110,00"],
+    video3d:["Vídeo Publicitário de Alto Impacto: Cinematográfico ou 3D",350,L+"0DnwOx6zeb-350,00"]
+  };
+  const PG=CONFIG.PAGAMENTO=CONFIG.PAGAMENTO||{};PG.CARTAO=PG.CARTAO||{};
+  (CONFIG.PLANOS||[]).concat(CONFIG.AVULSOS||[]).forEach(p=>{const o=O[p.id];if(o){p.nome=o[0];p.valor=o[1];PG.CARTAO[p.id]=o[2]}});
+  const PIXV=["00020101021126580014br.gov.bcb.pix01362dc0d480-71a3-4dac-b15c-1e40d39e04655204000053039865802BR59176983ROSANTOS6013VOLTAREDONDA620705036304054D","RODRIGO OLLIVEIRA","RIO DE JANEIRO"];
+  if(!PG.PIX_CHAVE&&PIXV[0]&&PIXV[0].indexOf("__")!==0){PG.PIX_CHAVE=PIXV[0];PG.PIX_NOME=PIXV[1];PG.PIX_CIDADE=PIXV[2]}
+})();
+/* FIM OFERTA_V13 */
 /* ===================================================== */
 
 const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
@@ -788,26 +815,56 @@ function pixPayload(chave,nome,cidade,valor){
  let p=tlv('00','01')+tlv('01','11')+tlv('26',tlv('00','br.gov.bcb.pix')+tlv('01',chave))+tlv('52','0000')+tlv('53','986')+tlv('54',(+valor).toFixed(2))+tlv('58','BR')+tlv('59',limpa(nome,25)||'RECEBEDOR')+tlv('60',limpa(cidade,15)||'BRASIL')+tlv('62',tlv('05','***'))+'6304';
  return p+crc16(p)}
 (function(){
- const M=$('#modal'),PG=CONFIG.PAGAMENTO||{};let cur=null;
+ const M=$('#modal'),PG=CONFIG.PAGAMENTO||{},API=(PG.API||'').replace(/\/$/,'');let cur=null,poll=null;
  const pedido=()=>`${cur.nome} (${fmt2(cur.valor)}${cur.mensal?'/mês':''})`;
+ const parar=()=>{if(poll){clearInterval(poll);poll=null}};
+ const erro=t=>{const e=$('#m-erro');e.textContent=t||'';e.hidden=!t};
  function abrir(id){cur=CONFIG.PLANOS.concat(CONFIG.AVULSOS).find(x=>x.id===id);if(!cur)return;
-  cur.mensal=CONFIG.PLANOS.indexOf(cur)>-1;
+  cur.mensal=CONFIG.PLANOS.indexOf(cur)>-1;parar();erro('');
   $('#m-nome').textContent=cur.nome;$('#m-val').textContent=fmt2(cur.valor)+(cur.mensal?' /mês':'')+(cur.obs?' ('+cur.obs+')':'');
-  $('#pixbox').classList.remove('on');$('#m-qr').hidden=true;
-  $('#m-pix').style.display=PG.PIX_CHAVE?'':'none';
-  $('#m-hint').textContent=PG.PIX_CHAVE?'O Pix cai direto na conta, sem intermediário. Depois de pagar, envie o comprovante no WhatsApp para começarmos.':'Toque em WhatsApp e enviamos a chave Pix ou o link do cartão na hora.';
+  $('#pixbox').classList.remove('on');$('#m-qr').hidden=true;$('#m-dados').hidden=!API;
+  $('#m-pix').style.display=(API||PG.PIX_CHAVE)?'':'none';$('#m-pix').disabled=false;
+  $('#m-copy').style.display='';$('#m-proof').style.display=API?'none':'';$('#m-proof').textContent='Já paguei: enviar comprovante';
+  $('#m-hint').textContent=API?'Preencha seus dados e pague no Pix (confirmação automática) ou no cartão. Depois do pagamento enviamos um e-mail com os próximos passos.':PG.PIX_CHAVE?'O Pix cai direto na conta, sem intermediário. Depois de pagar, envie o comprovante no WhatsApp para começarmos.':'Toque em WhatsApp e enviamos a chave Pix ou o link do cartão na hora.';
   M.classList.add('on');M.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
- function fechar(){M.classList.remove('on');M.setAttribute('aria-hidden','true');document.body.style.overflow=''}
+ function fechar(){parar();M.classList.remove('on');M.setAttribute('aria-hidden','true');document.body.style.overflow=''}
+ function dados(){const d={nome:$('#m-nomec').value.trim(),email:$('#m-email').value.trim(),whatsapp:$('#m-fone').value.replace(/\D/g,'')};
+  if(d.nome.length<2){erro('Informe o seu nome.');$('#m-nomec').focus();return null}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)){erro('Informe um e-mail válido.');$('#m-email').focus();return null}
+  if(d.whatsapp.length<10){erro('Informe o WhatsApp com DDD.');$('#m-fone').focus();return null}
+  erro('');return d}
  document.addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(b){e.preventDefault();abrir(b.dataset.buy)}});
  $('#m-x').onclick=fechar;M.addEventListener('click',e=>{if(e.target===M)fechar()});addEventListener('keydown',e=>{if(e.key==='Escape')fechar()});
  $('#m-zap').onclick=()=>zap(`Olá! Quero contratar: ${pedido()}. Podemos fechar?`);
- $('#m-card').onclick=()=>{const l=(PG.CARTAO||{})[cur.id];l?window.open(l,'_blank','noopener'):zap(`Olá! Quero pagar no cartão: ${pedido()}. Pode me mandar o link de pagamento?`)};
+ $('#m-card').onclick=()=>{
+  if(API){const d=dados();if(!d)return;
+   try{fetch(API+'/lead-cartao',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({produto:cur.id},d)),keepalive:true}).catch(()=>{})}catch(e){}
+   $('#m-hint').textContent='Depois de pagar no cartão, nossa equipe confirma e você recebe um e-mail com os próximos passos.'}
+  const l=(PG.CARTAO||{})[cur.id];l?window.open(l,'_blank','noopener'):zap(`Olá! Quero pagar no cartão: ${pedido()}. Pode me mandar o link de pagamento?`)};
  $('#m-proof').onclick=()=>zap(`Olá! Acabei de pagar via Pix: ${pedido()}. Segue o comprovante.`);
- $('#m-pix').onclick=async()=>{
-  const code=pixPayload(PG.PIX_CHAVE,PG.PIX_NOME,PG.PIX_CIDADE,cur.valor);
+ async function mostrarPix(code){
   $('#m-code').value=code;$('#pixbox').classList.add('on');
   try{await lib('qr');const q=qrcode(0,'M');q.addData(code);q.make();$('#m-qr').innerHTML=q.createSvgTag(6,0);$('#m-qr').hidden=false}catch(e){$('#m-qr').hidden=true}
-  $('#pixbox').scrollIntoView({behavior:'smooth',block:'nearest'})};
+  $('#pixbox').scrollIntoView({behavior:'smooth',block:'nearest'})}
+ function acompanhar(txid,email){let n=0;parar();
+  poll=setInterval(async()=>{if(++n>450){parar();return}
+   try{const r=await fetch(API+'/status/'+txid);const j=await r.json();
+    if(j.status==='PAGA'){parar();$('#m-hint').textContent='✅ Pagamento confirmado! Enviamos um e-mail para '+email+' com os próximos passos.';
+     $('#m-copy').style.display='none';
+     if(j.briefing){const b=$('#m-proof');b.style.display='';b.textContent='Responder as perguntas da produção agora';b.onclick=()=>window.open(j.briefing,'_blank','noopener')}}
+    else if(j.status==='EXPIRADA'){parar();$('#m-hint').textContent='Este Pix expirou. Toque em "Pagar com Pix" para gerar outro.';$('#m-pix').disabled=false}}catch(e){}},4000)}
+ $('#m-pix').onclick=async()=>{
+  if(API){const d=dados();if(!d)return;const b=$('#m-pix');b.disabled=true;$('#m-copy').style.display='';
+   try{const r=await fetch(API+'/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({produto:cur.id},d))});
+    const j=await r.json();if(!r.ok||!j.copiaECola)throw new Error(j.erro||'falha');
+    await mostrarPix(j.copiaECola);$('#m-hint').textContent='Pague no app do banco. A confirmação é automática e você recebe um e-mail com os próximos passos.';acompanhar(j.txid,d.email);return}
+   catch(e){b.disabled=false;
+    if(PG.PIX_CHAVE){await mostrarPix(pixPayload(PG.PIX_CHAVE,PG.PIX_NOME,PG.PIX_CIDADE,cur.valor));$('#m-proof').style.display='';
+     try{fetch(API+'/lead-cartao',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({produto:cur.id,meio:'pix'},d)),keepalive:true}).catch(()=>{})}catch(x){}
+     $('#m-hint').textContent='Pague no app do banco. Assim que confirmarmos o seu Pix, você recebe um e-mail com os próximos passos. Se quiser agilizar, envie o comprovante no WhatsApp.'}
+    else erro((e&&e.message&&e.message!=='falha'&&e.message!=='Failed to fetch')?e.message:'Não foi possível gerar o Pix agora. Fale com a gente no WhatsApp.');
+    return}}
+  await mostrarPix(pixPayload(PG.PIX_CHAVE,PG.PIX_NOME,PG.PIX_CIDADE,cur.valor))};
  $('#m-copy').onclick=async()=>{const t=$('#m-code').value,b=$('#m-copy');
   try{await navigator.clipboard.writeText(t)}catch(e){$('#m-code').select();document.execCommand('copy')}
   b.textContent='Copiado ✓ Cole no app do banco';setTimeout(()=>b.textContent='Copiar Pix copia e cola',2600)};
