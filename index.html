@@ -522,9 +522,9 @@ const CONFIG = {
 
   /* PAGAMENTO DIRETO NA SUA CONTA */
   PAGAMENTO: {
-    PIX_CHAVE: "",      // como está cadastrada no banco. Telefone: +5511999998888 | CPF/CNPJ: só números | e-mail | chave aleatória
-    PIX_NOME: "",       // nome do recebedor (igual ao do banco, sem acento, até 25 letras)
-    PIX_CIDADE: "",     // sua cidade (até 15 letras)
+    PIX_CHAVE: "2dc0d480-71a3-4dac-b15c-1e40d39e0465",      // como está cadastrada no banco. Telefone: +5511999998888 | CPF/CNPJ: só números | e-mail | chave aleatória
+    PIX_NOME: "RODRIGO OLIVEIRA",       // nome do recebedor (igual ao do banco, sem acento, até 25 letras)
+    PIX_CIDADE: "RIO DE JANEIRO",     // sua cidade (até 15 letras)
     API: "https://tvdigao92.duckdns.org:8443/api",   // Pix automatico (Banco Inter) + e-mails; vazio = Pix estatico antigo
     CARTAO: {           // link de pagamento de cada produto (Mercado Pago, InfinitePay, etc.)
       tv:"", radio:"", combo:"", encartes:"", jingle:"", vinhetas:"", video3d:""
@@ -595,7 +595,7 @@ const CONFIG = {
   };
   const PG=CONFIG.PAGAMENTO=CONFIG.PAGAMENTO||{};PG.CARTAO=PG.CARTAO||{};
   (CONFIG.PLANOS||[]).concat(CONFIG.AVULSOS||[]).forEach(p=>{const o=O[p.id];if(o){p.nome=o[0];p.valor=o[1];PG.CARTAO[p.id]=o[2]}});
-  const PIXV=["2dc0d480-71a3-4dac-b15c-1e40d39e0465","RODRIGO OLLIVEIRA","RIO DE JANEIRO"];
+  const PIXV=["2dc0d480-71a3-4dac-b15c-1e40d39e0465","RODRIGO OLIVEIRA","RIO DE JANEIRO"];
   if(!PG.PIX_CHAVE&&PIXV[0]&&PIXV[0].indexOf("__")!==0){PG.PIX_CHAVE=PIXV[0];PG.PIX_NOME=PIXV[1];PG.PIX_CIDADE=PIXV[2]}
 })();
 /* FIM OFERTA_V13 */
